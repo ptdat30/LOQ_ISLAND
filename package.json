@@ -1,0 +1,54 @@
+{
+  "name": "dynamic-island-desktop",
+  "version": "1.0.0",
+  "description": "Dynamic Island for Desktop - A sleek, floating, always-on-top interactive widget for Windows, macOS, and Linux",
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "build:preload": "esbuild electron/preload.ts --format=cjs --platform=node --bundle --external:electron --outfile=dist-electron/preload.cjs",
+    "predev": "npm run build:preload",
+    "prebuild": "npm run build:preload",
+    "dev": "vite",
+    "build": "tsc && vite build && electron-builder",
+    "build:renderer": "tsc && npm run build:preload && vite build",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "dynamic-island",
+    "electron",
+    "react",
+    "widget",
+    "desktop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "electron-log": "^5.3.4",
+    "framer-motion": "^12.4.10",
+    "lucide-react": "^1.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "^34.3.0",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^3.0.7"
+  }
+}
