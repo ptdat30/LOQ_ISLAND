@@ -241,6 +241,19 @@ export const IslandContainer: React.FC = () => {
         else if (isSimulatorOpen) setIsSimulatorOpen(false);
         else if (isDrawerOpen) toggleDrawer();
         else setExpanded(false);
+      } else if (e.key.toLowerCase() === 'e' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        // Quick trigger egg boiling timer (Ctrl+Shift+E)
+        e.preventDefault();
+        if (eggStatus === 'idle') {
+          useEggTimerStore.getState().startTimer();
+          handleEggStart();
+        } else if (eggStatus === 'alert') {
+          useEggTimerStore.getState().dismissAlert();
+          setExpanded(false);
+        } else {
+          setActiveSlot('egg');
+          setExpanded(true);
+        }
       } else if (e.key === 'ArrowRight' && (e.ctrlKey || e.metaKey)) {
         cycleActivity('next');
       } else if (e.key === 'ArrowLeft' && (e.ctrlKey || e.metaKey)) {
@@ -250,7 +263,7 @@ export const IslandContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity]);
+  }, [eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity, handleEggStart]);
 
   // Secondary bubbles resolution
   let secondaryLeft: Activity | null = null;

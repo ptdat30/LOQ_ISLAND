@@ -4,6 +4,7 @@ import type { Activity } from '../../types/activity';
 import { IconRenderer } from './IconRenderer';
 import { Pin, PinOff, X, Play, Pause, Layers } from 'lucide-react';
 import { islandColors } from '../../lib/motion';
+import { EggIcon } from './EggTimer/EggIcon';
 import { EggTimerCompact } from './EggTimer/EggTimerCompact';
 import { EggTimerExpanded } from './EggTimer/EggTimerExpanded';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
@@ -39,7 +40,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
   onEggStart,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { status: eggStatus, dismissAlert } = useEggTimerStore();
+  const { status: eggStatus, dismissAlert, startTimer } = useEggTimerStore();
 
   const isAlert = eggStatus === 'alert';
   const showEgg = isEggTimer || !activity;
@@ -66,7 +67,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
       animate={{
         opacity: 1,
         scale: 1,
-        width: isExpanded ? 400 : (showEgg && eggStatus === 'idle' ? 200 : 230),
+        width: isExpanded ? 400 : (showEgg && eggStatus === 'idle' ? 200 : 240),
         height: isExpanded ? 170 : 37,
         borderRadius: isExpanded ? 32 : 9999,
       }}
@@ -120,6 +121,22 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
         ) : activity ? (
           <>
             <div className="flex items-center gap-2 min-w-0">
+              {/* Egg Quick Action in left slot (Luộc trứng kể cả khi đang nghe nhạc/activity khác) */}
+              {eggStatus === 'idle' && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startTimer();
+                    onEggStart?.();
+                  }}
+                  title="Luộc trứng (15 phút)"
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/15 transition-all cursor-pointer shrink-0"
+                >
+                  <EggIcon size={12} className="stroke-[1.5]" />
+                </button>
+              )}
+
               <div
                 className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(255,255,255,0.1)' }}
@@ -131,7 +148,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
                 )}
               </div>
               <span
-                className="truncate max-w-[155px] leading-none"
+                className="truncate max-w-[130px] leading-none"
                 style={{ color: '#fff', fontSize: 13, fontWeight: 590, letterSpacing: -0.08 }}
               >
                 {activity.title}
