@@ -80,6 +80,7 @@ interface ShiftScheduleStore {
   testWarningNow: (taskId?: string) => void;
   createRealtimeTestTask: (delayMinutes?: number) => void;
   resetAllToPending: () => void;
+  resetToDefaultSchedule: () => void;
 }
 
 let scheduleInterval: ReturnType<typeof setInterval> | null = null;
@@ -429,8 +430,16 @@ export const useShiftScheduleStore = create<ShiftScheduleStore>((set, get) => {
         snoozeUntil: null,
         completedAt: null,
       }));
-      set({ tasks: reset, activeAlertTaskId: null });
+      set({ tasks: reset, activeAlertTaskId: null, feedbackMessage: 'Đã reset tất cả về Pending' });
       saveTasks(reset);
+      setTimeout(() => set({ feedbackMessage: null }), 1500);
+    },
+
+    resetToDefaultSchedule: () => {
+      const initial = createInitialTasks();
+      set({ tasks: initial, activeAlertTaskId: null, feedbackMessage: 'Đã khôi phục 17 khung giờ gốc' });
+      saveTasks(initial);
+      setTimeout(() => set({ feedbackMessage: null }), 2000);
     },
   };
 });
