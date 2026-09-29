@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useActivityStore } from '../../stores/activityStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
+import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
 import { PrimaryPill } from './PrimaryPill';
 import { SecondaryBubble } from './SecondaryBubble';
 import { EggTimerBubble } from './EggTimer/EggTimerBubble';
@@ -41,17 +42,32 @@ export const IslandContainer: React.FC = () => {
     initStore: initEggStore,
   } = useEggTimerStore();
 
+  const {
+    tasks: shiftTasks,
+    activeAlertTaskId,
+    initSchedule,
+    dismissAlert: dismissShiftAlert,
+  } = useShiftScheduleStore();
+
   useEffect(() => {
     initEggStore();
-  }, [initEggStore]);
+    initSchedule();
+  }, [initEggStore, initSchedule]);
+
+  const activeShiftAlertTask = shiftTasks.find(
+    (t) => t.id === activeAlertTaskId || (t.enabled && t.status === 'alert')
+  );
 
   const total = activities.length;
   const primaryActivity = total > 0 ? activities[activeActivityIndex] || activities[0] : null;
 
-  // Active slot tracking: 'egg' or 'activity'
-  const [activeSlot, setActiveSlot] = useState<'egg' | 'activity'>('egg');
+  // Active slot tracking: 'shift' | 'egg' | 'activity'
+  const [activeSlot, setActiveSlot] = useState<'shift' | 'egg' | 'activity'>('shift');
   const isEggActive = eggStatus === 'running' || eggStatus === 'alert';
-  const isEggInPrimary = total === 0 ? true : (isEggActive && activeSlot === 'egg');
+
+  // Priority resolution for primary pill
+  const isShiftAlert = !!activeShiftAlertTask;
+  const isEggInPrimary = !isShiftAlert && (total === 0 ? isEggActive : (isEggActive && activeSlot === 'egg'));
 
   const { loadInitialSettings, setShortcutConflict } = useSettingsStore();
 
@@ -65,6 +81,7 @@ export const IslandContainer: React.FC = () => {
 
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
   const eggCollapseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const shiftCollapseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearEggCollapseTimer = useCallback(() => {
     if (eggCollapseTimerRef.current) {
@@ -75,7 +92,6 @@ export const IslandContainer: React.FC = () => {
 
   const scheduleEggCollapse = useCallback((delayMs = 4000) => {
     clearEggCollapseTimer();
-    // Do not collapse if pinned, in alert state, or under 1 minute
     if (isPinned || eggStatus === 'alert') return;
     if (eggStatus === 'running' && eggRemaining < 60 * 1000) return;
 
@@ -94,14 +110,26 @@ export const IslandContainer: React.FC = () => {
     }, delayMs);
   }, [clearEggCollapseTimer, isPinned, eggStatus, eggRemaining, setExpanded]);
 
-  // When egg alert triggers -> forces egg to primary and morphs expanded immediately
+  // When Shift Reminder triggers Alert -> Priority 1 (highest), hold 60s
   useEffect(() => {
-    if (eggStatus === 'alert') {
+    if (activeShiftAlertTask) {
+      setActiveSlot('shift');
+      setExpanded(true);
+      if (shiftCollapseTimerRef.current) clearTimeout(shiftCollapseTimerRef.current);
+      shiftCollapseTimerRef.current = setTimeout(() => {
+        setExpanded(false);
+      }, 60000); // Hold 60s as specified
+    }
+  }, [activeShiftAlertTask, setExpanded]);
+
+  // When egg alert triggers -> Priority 2, forces egg to primary and morphs expanded immediately
+  useEffect(() => {
+    if (eggStatus === 'alert' && !activeShiftAlertTask) {
       setActiveSlot('egg');
       setExpanded(true);
       clearEggCollapseTimer();
     }
-  }, [eggStatus, setExpanded, clearEggCollapseTimer]);
+  }, [eggStatus, activeShiftAlertTask, setExpanded, clearEggCollapseTimer]);
 
   const handleEggStart = useCallback(() => {
     setActiveSlot('egg');
@@ -122,7 +150,7 @@ export const IslandContainer: React.FC = () => {
 
     if (isEggInPrimary && eggStatus === 'running') {
       scheduleEggCollapse(4000);
-    } else if (!isEggInPrimary) {
+    } else if (!isEggInPrimary && !isShiftAlert) {
       if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
       collapseTimerRef.current = setTimeout(() => {
         setExpanded(false);
@@ -138,7 +166,7 @@ export const IslandContainer: React.FC = () => {
         }
       }, 280);
     }
-  }, [mode, isPinned, isEggInPrimary, eggStatus, scheduleEggCollapse, setExpanded]);
+  }, [mode, isPinned, isEggInPrimary, eggStatus, isShiftAlert, scheduleEggCollapse, setExpanded]);
 
   // Throttled Sync Pill Bounding Rect to Electron Main Process
   const syncRafId = useRef<number | null>(null);
@@ -150,7 +178,7 @@ export const IslandContainer: React.FC = () => {
       syncRafId.current = null;
       if (!window.electronAPI) return;
 
-      if ((!primaryActivity && !isEggInPrimary) || !containerRef.current) {
+      if (!containerRef.current) {
         window.electronAPI.syncPillBounds({ x: 0, y: 0, width: 0, height: 0 });
         return;
       }
@@ -171,7 +199,7 @@ export const IslandContainer: React.FC = () => {
       };
       window.electronAPI.syncPillBounds(bounds);
     });
-  }, [primaryActivity, isEggInPrimary]);
+  }, []);
 
   // Listen to Electron events
   useEffect(() => {
@@ -228,13 +256,16 @@ export const IslandContainer: React.FC = () => {
       observer.observe(containerRef.current);
     }
     return () => observer.disconnect();
-  }, [syncBounds, mode, total, isEggInPrimary, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest]);
+  }, [syncBounds, mode, total, isEggInPrimary, isShiftAlert, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (eggStatus === 'alert') {
+        if (activeShiftAlertTask) {
+          dismissShiftAlert(activeShiftAlertTask.id);
+          setExpanded(false);
+        } else if (eggStatus === 'alert') {
           useEggTimerStore.getState().dismissAlert();
           setExpanded(false);
         } else if (isSettingsOpen) toggleSettings();
@@ -263,7 +294,7 @@ export const IslandContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity, handleEggStart]);
+  }, [activeShiftAlertTask, eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity, handleEggStart, dismissShiftAlert]);
 
   // Secondary bubbles resolution
   let secondaryLeft: Activity | null = null;
@@ -271,7 +302,16 @@ export const IslandContainer: React.FC = () => {
   let showEggBubble = false;
   let queuedCount = 0;
 
-  if (isEggInPrimary) {
+  if (isShiftAlert) {
+    // Shift Alert is occupying Primary Pill
+    if (isEggActive) {
+      showEggBubble = true;
+    }
+    if (total >= 1) {
+      secondaryRight = activities[0];
+      queuedCount = Math.max(0, total - 1);
+    }
+  } else if (isEggInPrimary) {
     // Egg is in Primary Pill
     if (total === 1) {
       secondaryRight = activities[0];
@@ -356,8 +396,14 @@ export const IslandContainer: React.FC = () => {
           {/* Primary Main Pill */}
           <AnimatePresence>
             <PrimaryPill
-              key={isEggInPrimary ? 'primary-egg-pill' : (primaryActivity?.id || 'idle-pill')}
-              activity={isEggInPrimary ? null : primaryActivity}
+              key={
+                isShiftAlert
+                  ? `primary-shift-${activeShiftAlertTask?.id}`
+                  : isEggInPrimary
+                  ? 'primary-egg-pill'
+                  : (primaryActivity?.id || 'idle-pill')
+              }
+              activity={isShiftAlert || isEggInPrimary ? null : primaryActivity}
               isEggTimer={isEggInPrimary}
               isExpanded={mode === 'expanded'}
               isPinned={isPinned}
@@ -393,7 +439,10 @@ export const IslandContainer: React.FC = () => {
               }}
               onToggleDrawer={toggleDrawer}
               onDismiss={() => {
-                if (isEggInPrimary) {
+                if (isShiftAlert && activeShiftAlertTask) {
+                  dismissShiftAlert(activeShiftAlertTask.id);
+                  setExpanded(false);
+                } else if (isEggInPrimary) {
                   useEggTimerStore.getState().cancelTimer();
                   setExpanded(false);
                 } else if (primaryActivity) {

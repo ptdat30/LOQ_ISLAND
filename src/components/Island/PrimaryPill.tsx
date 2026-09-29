@@ -7,7 +7,10 @@ import { islandColors } from '../../lib/motion';
 import { EggIcon } from './EggTimer/EggIcon';
 import { EggTimerCompact } from './EggTimer/EggTimerCompact';
 import { EggTimerExpanded } from './EggTimer/EggTimerExpanded';
+import { ShiftCompact } from './ShiftReminder/ShiftCompact';
+import { ShiftExpanded } from './ShiftReminder/ShiftExpanded';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
+import { useShiftScheduleStore, getNextTaskInfo } from '../../stores/shiftScheduleStore';
 
 interface PrimaryPillProps {
   activity: Activity | null;
@@ -40,24 +43,55 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
   onEggStart,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { status: eggStatus, dismissAlert, startTimer } = useEggTimerStore();
+  const { status: eggStatus, dismissAlert: dismissEggAlert, startTimer: startEggTimer } = useEggTimerStore();
+  const { tasks, activeAlertTaskId } = useShiftScheduleStore();
 
-  const isAlert = eggStatus === 'alert';
-  const showEgg = isEggTimer || !activity;
+  const isEggAlert = eggStatus === 'alert';
+  const alertShiftTask = tasks.find((t) => t.id === activeAlertTaskId || (t.enabled && t.status === 'alert'));
+  const isShiftAlert = !!alertShiftTask;
+
+  const { is30sWarning, hasUnfinishedAlert } = getNextTaskInfo(tasks);
+  const isShiftYellow = is30sWarning || hasUnfinishedAlert;
+
+  // Determine what Primary Pill is rendering
+  const showShiftAlert = isShiftAlert && alertShiftTask;
+  const showEggExpanded = !showShiftAlert && (isEggTimer || isEggAlert || (!activity && eggStatus === 'running'));
+  const isEggRunning = eggStatus === 'running';
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isAlert) {
+    if (isEggAlert) {
       e.stopPropagation();
-      dismissAlert();
+      dismissEggAlert();
       if (isExpanded) onToggleExpand();
       return;
     }
 
     if (!isExpanded) {
       e.stopPropagation();
-      onToggleExpand();
+      if (!activity && !isEggRunning && !isEggAlert && !showShiftAlert) {
+        // Idle state: clicking opens Queue Drawer
+        onToggleDrawer();
+      } else {
+        onToggleExpand();
+      }
     }
   };
+
+  // Compute compact width
+  let compactWidth = 240;
+  if (!activity && !isEggRunning) {
+    compactWidth = 270; // Fit Egg slot + Shift Countdown
+  } else if (showEggExpanded && isEggRunning) {
+    compactWidth = 200;
+  }
+
+  // Animation / Glow styling
+  let glowClass = '';
+  if (isShiftAlert) {
+    glowClass = 'animate-yellow-pulse-3';
+  } else if (isEggAlert) {
+    glowClass = 'animate-pill-glow';
+  }
 
   return (
     <motion.div
@@ -67,7 +101,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
       animate={{
         opacity: 1,
         scale: 1,
-        width: isExpanded ? 400 : (showEgg && eggStatus === 'idle' ? 200 : 240),
+        width: isExpanded ? 400 : compactWidth,
         height: isExpanded ? 170 : 37,
         borderRadius: isExpanded ? 32 : 9999,
       }}
@@ -82,20 +116,19 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
         if (info.offset.y > 45 || info.velocity.y > 300) onToggleExpand();
       }}
       style={{
-        background: islandColors.bg,
-        boxShadow: isAlert
+        background: isShiftYellow && !isExpanded ? 'rgba(30, 24, 8, 0.95)' : islandColors.bg,
+        border: isShiftYellow && !isExpanded ? '1px solid rgba(255, 214, 10, 0.35)' : undefined,
+        boxShadow: isEggAlert || isShiftAlert
           ? undefined
           : isExpanded
           ? '0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06)'
           : islandColors.shadow,
         willChange: 'transform',
       }}
-      className={`shrink-0 relative overflow-hidden select-none cursor-pointer ${
-        isAlert ? 'animate-pill-glow' : ''
-      }`}
+      className={`shrink-0 relative overflow-hidden select-none cursor-pointer ${glowClass}`}
       onClick={handleClick}
       onDoubleClick={(e) => {
-        if (!isAlert) {
+        if (!isEggAlert && !isShiftAlert) {
           e.stopPropagation();
           onTogglePin();
         }
@@ -111,7 +144,8 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
           transition: 'opacity 0.12s ease-out',
         }}
       >
-        {showEgg ? (
+        {/* Case 1: Egg Timer Running in Primary */}
+        {isEggTimer && isEggRunning ? (
           <EggTimerCompact
             onStart={() => {
               if (onEggStart) onEggStart();
@@ -119,15 +153,15 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
             }}
           />
         ) : activity ? (
+          /* Case 2: Regular Activity (e.g. Spotify) with Egg Quick Action in left slot */
           <>
             <div className="flex items-center gap-2 min-w-0">
-              {/* Egg Quick Action in left slot (Luộc trứng kể cả khi đang nghe nhạc/activity khác) */}
               {eggStatus === 'idle' && (
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    startTimer();
+                    startEggTimer();
                     onEggStart?.();
                   }}
                   title="Luộc trứng (15 phút)"
@@ -177,7 +211,29 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
               )}
             </div>
           </>
-        ) : null}
+        ) : (
+          /* Case 3: Idle Dynamic Island (Left: Egg Starter, Right: Shift Countdown) */
+          <div className="flex items-center justify-between w-full">
+            {/* Slot bên trái: Icon Quả trứng (click để luộc 15p) */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                startEggTimer();
+                onEggStart?.();
+              }}
+              title="Click để bắt đầu luộc trứng 15 phút"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/15 transition-all cursor-pointer shrink-0 mr-1"
+            >
+              <EggIcon size={13} className="stroke-[1.5]" />
+            </button>
+
+            {/* Slot chính: Đồng hồ nhắc nhở khung giờ di chuyển (click mở Queue Drawer) */}
+            <div className="flex-1 min-w-0" onClick={onToggleDrawer}>
+              <ShiftCompact onOpenDrawer={onToggleDrawer} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ─── EXPANDED VIEW ─── */}
@@ -189,9 +245,14 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
           transition: 'opacity 0.15s ease-out',
         }}
       >
-        {showEgg ? (
+        {/* Priority 1: Shift Reminder Alert */}
+        {showShiftAlert ? (
+          <ShiftExpanded task={alertShiftTask} onCollapse={onToggleExpand} />
+        ) : showEggExpanded ? (
+          /* Priority 2: Egg Timer Expanded */
           <EggTimerExpanded onDismiss={onToggleExpand} />
         ) : activity ? (
+          /* Priority 3: Regular Activity Expanded */
           <div className="flex flex-col justify-between h-full p-4">
             {/* Header */}
             <div

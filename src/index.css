@@ -51,6 +51,15 @@
   }
 }
 
+@keyframes yellowGlow3Times {
+  0%, 33.33%, 66.66%, 100% {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06);
+  }
+  16.66%, 50%, 83.33% {
+    box-shadow: 0 0 35px rgba(255, 214, 10, 0.5), 0 20px 40px rgba(0,0,0,0.9);
+  }
+}
+
 @keyframes urgentPulse {
   0%, 100% {
     transform: scale(1);
@@ -66,6 +75,10 @@
 
 .animate-pill-glow {
   animation: pillGlowAlert 0.8s infinite ease-in-out;
+}
+
+.animate-yellow-pulse-3 {
+  animation: yellowGlow3Times 1.8s ease-in-out forwards;
 }
 
 .animate-urgent-pulse {
