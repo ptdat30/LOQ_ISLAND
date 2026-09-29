@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { ScheduleTask, ScheduleNotificationSettings } from '../types/shiftSchedule';
 
 const STORAGE_KEY_SCHEDULE = 'hyperisland_shift_schedule';
@@ -175,7 +175,10 @@ export const useShiftScheduleStore = create<ShiftScheduleStore>((set, get) => {
 
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
-    set({ currentTimeStr: `${hh}:${mm}` });
+    const newTimeStr = `${hh}:${mm}`;
+    if (newTimeStr !== get().currentTimeStr) {
+      set({ currentTimeStr: newTimeStr });
+    }
   };
 
   return {

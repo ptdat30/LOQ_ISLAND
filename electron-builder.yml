@@ -1,6 +1,6 @@
 appId: com.dynamicisland.desktop
 productName: Dynamic Island for Desktop
-copyright: Copyright © 2026
+copyright: Copyright 2026
 
 directories:
   output: release
@@ -9,23 +9,31 @@ directories:
 files:
   - dist/**/*
   - dist-electron/**/*
+  - scripts/**/*
   - package.json
+
+extraResources:
+  - from: scripts/
+    to: scripts/
 
 win:
   target:
-    - target: nsis
-      arch:
-        - x64
     - target: portable
       arch:
         - x64
-  artifactName: ${productName}-Windows-${version}.${ext}
+    - target: nsis
+      arch:
+        - x64
+
+portable:
+  artifactName: ${productName}-Portable-${version}.${ext}
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: always
   createStartMenuShortcut: true
+  artifactName: ${productName}-Setup-${version}.${ext}
 
 mac:
   target:

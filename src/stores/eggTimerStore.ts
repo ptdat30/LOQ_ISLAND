@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { EggTimerStatus } from '../types/eggTimer';
 
 const STORAGE_KEY = 'hyperisland_egg_timer';
@@ -78,7 +78,7 @@ export const useEggTimerStore = create<EggTimerStore>((set, get) => {
       } else {
         set({ remainingMs: remaining });
       }
-    }, 100);
+    }, 250);
   };
 
   return {

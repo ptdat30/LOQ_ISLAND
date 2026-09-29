@@ -39,11 +39,18 @@ export class MediaMonitor {
     this.isRunning = true;
 
     const possiblePaths = [
+      path.resolve(process.resourcesPath, 'scripts/media-service.ps1'),
+      path.resolve(process.resourcesPath, 'app.asar.unpacked/scripts/media-service.ps1'),
       path.resolve(process.cwd(), 'scripts/media-service.ps1'),
       path.resolve(__dirname, '../scripts/media-service.ps1'),
       path.resolve(__dirname, '../../scripts/media-service.ps1'),
     ];
-    const scriptPath = possiblePaths.find((p) => fs.existsSync(p)) || possiblePaths[0];
+    const scriptPath = possiblePaths.find((p) => fs.existsSync(p));
+    if (!scriptPath) {
+      log.info('[MediaMonitor] scripts/media-service.ps1 not found, media monitoring skipped.');
+      this.isRunning = false;
+      return;
+    }
 
     try {
       this.process = spawn('powershell.exe', [
@@ -102,11 +109,14 @@ export class MediaMonitor {
 
   public togglePlayPause(): void {
     const possiblePaths = [
+      path.resolve(process.resourcesPath, 'scripts/toggle-media.ps1'),
+      path.resolve(process.resourcesPath, 'app.asar.unpacked/scripts/toggle-media.ps1'),
       path.resolve(process.cwd(), 'scripts/toggle-media.ps1'),
       path.resolve(__dirname, '../scripts/toggle-media.ps1'),
       path.resolve(__dirname, '../../scripts/toggle-media.ps1'),
     ];
-    const scriptPath = possiblePaths.find((p) => fs.existsSync(p)) || possiblePaths[0];
+    const scriptPath = possiblePaths.find((p) => fs.existsSync(p));
+    if (!scriptPath) return;
 
     try {
       const toggleProc = spawn('powershell.exe', [

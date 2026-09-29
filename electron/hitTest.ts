@@ -131,7 +131,12 @@ export class HitTestPoller {
       // Within 150px: 16ms (60fps) for instantaneous hover detection
       // Farther away: 40ms (25fps) for responsive approach with minimal CPU
       const dist = distanceToPill(cursor, winBounds, this.pillBounds);
-      const nextInterval = dist < 150 ? 16 : 40;
+      let nextInterval = 120;
+      if (inside || dist < 80) {
+        nextInterval = 16;
+      } else if (dist < 250) {
+        nextInterval = 40;
+      }
       this.schedule(nextInterval);
     } catch {
       this.schedule(100);

@@ -1,4 +1,4 @@
-﻿import { app, BrowserWindow, globalShortcut, ipcMain, screen, type BrowserWindowConstructorOptions } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, screen, type BrowserWindowConstructorOptions } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
