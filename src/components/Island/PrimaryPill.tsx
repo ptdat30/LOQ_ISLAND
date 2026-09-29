@@ -229,7 +229,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
             </button>
 
             {/* Slot chính: Đồng hồ nhắc nhở khung giờ di chuyển (click mở Queue Drawer) */}
-            <div className="flex-1 min-w-0" onClick={onToggleDrawer}>
+            <div className="flex-1 min-w-0">
               <ShiftCompact onOpenDrawer={onToggleDrawer} />
             </div>
           </div>

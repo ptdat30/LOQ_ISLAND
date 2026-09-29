@@ -97,16 +97,6 @@ export const IslandContainer: React.FC = () => {
 
     eggCollapseTimerRef.current = setTimeout(() => {
       setExpanded(false);
-      if (window.electronAPI && containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        window.electronAPI.syncPillBounds({
-          x: Math.max(0, Math.round(centerX - 120)),
-          y: Math.max(0, Math.round(rect.top - 10)),
-          width: 240,
-          height: 56,
-        });
-      }
     }, delayMs);
   }, [clearEggCollapseTimer, isPinned, eggStatus, eggRemaining, setExpanded]);
 
@@ -154,16 +144,6 @@ export const IslandContainer: React.FC = () => {
       if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
       collapseTimerRef.current = setTimeout(() => {
         setExpanded(false);
-        if (window.electronAPI && containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          window.electronAPI.syncPillBounds({
-            x: Math.max(0, Math.round(centerX - 120)),
-            y: Math.max(0, Math.round(rect.top - 10)),
-            width: 240,
-            height: 56,
-          });
-        }
       }, 280);
     }
   }, [mode, isPinned, isEggInPrimary, eggStatus, isShiftAlert, scheduleEggCollapse, setExpanded]);
@@ -183,6 +163,17 @@ export const IslandContainer: React.FC = () => {
         return;
       }
 
+      // If drawer, settings, simulator, or context menu is open, expand hit-test bounds to full window!
+      if (isDrawerOpen || isSettingsOpen || isSimulatorOpen || approvalRequest || contextMenuPos) {
+        window.electronAPI.syncPillBounds({
+          x: 0,
+          y: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+        return;
+      }
+
       const rect = containerRef.current.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) {
         window.electronAPI.syncPillBounds({ x: 0, y: 0, width: 0, height: 0 });
@@ -199,7 +190,7 @@ export const IslandContainer: React.FC = () => {
       };
       window.electronAPI.syncPillBounds(bounds);
     });
-  }, []);
+  }, [isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest, contextMenuPos]);
 
   // Listen to Electron events
   useEffect(() => {
@@ -256,7 +247,7 @@ export const IslandContainer: React.FC = () => {
       observer.observe(containerRef.current);
     }
     return () => observer.disconnect();
-  }, [syncBounds, mode, total, isEggInPrimary, isShiftAlert, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest]);
+  }, [syncBounds, mode, total, isEggInPrimary, isShiftAlert, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest, contextMenuPos]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -424,26 +415,6 @@ export const IslandContainer: React.FC = () => {
                 if (nextExpanded && isEggInPrimary && eggStatus === 'running') {
                   scheduleEggCollapse(4000);
                 }
-                requestAnimationFrame(() => {
-                  if (window.electronAPI) {
-                    const centerX = window.innerWidth / 2;
-                    if (nextExpanded) {
-                      window.electronAPI.syncPillBounds({
-                        x: Math.max(0, Math.round(centerX - 210)),
-                        y: 0,
-                        width: 420,
-                        height: 175,
-                      });
-                    } else {
-                      window.electronAPI.syncPillBounds({
-                        x: Math.max(0, Math.round(centerX - 120)),
-                        y: 0,
-                        width: 240,
-                        height: 56,
-                      });
-                    }
-                  }
-                });
               }}
               onToggleDrawer={toggleDrawer}
               onDismiss={() => {

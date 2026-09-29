@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen, type BrowserWindowConstructorOptions } from 'electron';
+﻿import { app, BrowserWindow, globalShortcut, ipcMain, screen, type BrowserWindowConstructorOptions } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -49,8 +49,8 @@ const currentSettings: AppSettings = {
 
 function getPlatformWindowConfig(): BrowserWindowConstructorOptions {
   const baseConfig: BrowserWindowConstructorOptions = {
-    width: 600,
-    height: 380,
+    width: 680,
+    height: 560,
     transparent: true,
     frame: false,
     alwaysOnTop: true,

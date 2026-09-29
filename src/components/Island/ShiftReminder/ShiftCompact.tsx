@@ -12,10 +12,18 @@ export const ShiftCompact: React.FC<ShiftCompactProps> = ({ onOpenDrawer }) => {
 
   const isYellow = is30sWarning || hasUnfinishedAlert;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onOpenDrawer();
+  };
+
   // Temporary feedback message after clicking "Đã xong"
   if (feedbackMessage) {
     return (
-      <div className="flex items-center justify-center w-full px-2 text-white font-medium text-[13px] animate-pulse">
+      <div
+        onClick={handleClick}
+        className="flex items-center justify-center w-full px-2 text-white font-medium text-[13px] animate-pulse cursor-pointer"
+      >
         <span>{feedbackMessage}</span>
       </div>
     );
@@ -25,7 +33,7 @@ export const ShiftCompact: React.FC<ShiftCompactProps> = ({ onOpenDrawer }) => {
   if (!task) {
     return (
       <div
-        onClick={onOpenDrawer}
+        onClick={handleClick}
         className="flex items-center justify-between w-full px-2 cursor-pointer hover:opacity-100 transition-opacity"
       >
         <div className="flex items-center gap-1.5 text-white/50">
@@ -38,7 +46,7 @@ export const ShiftCompact: React.FC<ShiftCompactProps> = ({ onOpenDrawer }) => {
 
   return (
     <div
-      onClick={onOpenDrawer}
+      onClick={handleClick}
       className="flex items-center justify-between w-full px-1 cursor-pointer transition-colors duration-200"
     >
       {/* Left: Clock Icon + Countdown */}
