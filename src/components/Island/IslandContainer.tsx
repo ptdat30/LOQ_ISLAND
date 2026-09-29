@@ -1,19 +1,20 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useActivityStore } from '../../stores/activityStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useEggTimerStore } from '../../stores/eggTimerStore';
 import { PrimaryPill } from './PrimaryPill';
 import { SecondaryBubble } from './SecondaryBubble';
+import { EggTimerBubble } from './EggTimer/EggTimerBubble';
 import { QueueDrawer } from './QueueDrawer';
 import { SettingsModal } from './SettingsModal';
 import { SimulatorDrawer } from './SimulatorDrawer';
 import { ContextMenu } from './ContextMenu';
 import { ApprovalCard } from './ApprovalCard';
-import type { RelativeRect, Activity } from '../../types/activity';
+import type { Activity } from '../../types/activity';
 
 export const IslandContainer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     activities,
@@ -34,8 +35,23 @@ export const IslandContainer: React.FC = () => {
     addOrUpdateActivity,
   } = useActivityStore();
 
+  const {
+    status: eggStatus,
+    remainingMs: eggRemaining,
+    initStore: initEggStore,
+  } = useEggTimerStore();
+
+  useEffect(() => {
+    initEggStore();
+  }, [initEggStore]);
+
   const total = activities.length;
   const primaryActivity = total > 0 ? activities[activeActivityIndex] || activities[0] : null;
+
+  // Active slot tracking: 'egg' or 'activity'
+  const [activeSlot, setActiveSlot] = useState<'egg' | 'activity'>('egg');
+  const isEggActive = eggStatus === 'running' || eggStatus === 'alert';
+  const isEggInPrimary = total === 0 ? true : (isEggActive && activeSlot === 'egg');
 
   const { loadInitialSettings, setShortcutConflict } = useSettingsStore();
 
@@ -48,20 +64,22 @@ export const IslandContainer: React.FC = () => {
   } | null>(null);
 
   const collapseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const eggCollapseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleContainerMouseEnter = useCallback(() => {
-    if (collapseTimerRef.current) {
-      clearTimeout(collapseTimerRef.current);
-      collapseTimerRef.current = null;
+  const clearEggCollapseTimer = useCallback(() => {
+    if (eggCollapseTimerRef.current) {
+      clearTimeout(eggCollapseTimerRef.current);
+      eggCollapseTimerRef.current = null;
     }
   }, []);
 
-  const handleContainerMouseLeave = useCallback(() => {
-    // Only auto-collapse when currently expanded and NOT pinned
-    if (mode !== 'expanded' || isPinned) return;
+  const scheduleEggCollapse = useCallback((delayMs = 4000) => {
+    clearEggCollapseTimer();
+    // Do not collapse if pinned, in alert state, or under 1 minute
+    if (isPinned || eggStatus === 'alert') return;
+    if (eggStatus === 'running' && eggRemaining < 60 * 1000) return;
 
-    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
-    collapseTimerRef.current = setTimeout(() => {
+    eggCollapseTimerRef.current = setTimeout(() => {
       setExpanded(false);
       if (window.electronAPI && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
@@ -73,8 +91,54 @@ export const IslandContainer: React.FC = () => {
           height: 56,
         });
       }
-    }, 280);
-  }, [mode, isPinned, setExpanded]);
+    }, delayMs);
+  }, [clearEggCollapseTimer, isPinned, eggStatus, eggRemaining, setExpanded]);
+
+  // When egg alert triggers -> forces egg to primary and morphs expanded immediately
+  useEffect(() => {
+    if (eggStatus === 'alert') {
+      setActiveSlot('egg');
+      setExpanded(true);
+      clearEggCollapseTimer();
+    }
+  }, [eggStatus, setExpanded, clearEggCollapseTimer]);
+
+  const handleEggStart = useCallback(() => {
+    setActiveSlot('egg');
+    setExpanded(true);
+    scheduleEggCollapse(4000);
+  }, [setExpanded, scheduleEggCollapse]);
+
+  const handleContainerMouseEnter = useCallback(() => {
+    clearEggCollapseTimer();
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current);
+      collapseTimerRef.current = null;
+    }
+  }, [clearEggCollapseTimer]);
+
+  const handleContainerMouseLeave = useCallback(() => {
+    if (mode !== 'expanded' || isPinned) return;
+
+    if (isEggInPrimary && eggStatus === 'running') {
+      scheduleEggCollapse(4000);
+    } else if (!isEggInPrimary) {
+      if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+      collapseTimerRef.current = setTimeout(() => {
+        setExpanded(false);
+        if (window.electronAPI && containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          window.electronAPI.syncPillBounds({
+            x: Math.max(0, Math.round(centerX - 120)),
+            y: Math.max(0, Math.round(rect.top - 10)),
+            width: 240,
+            height: 56,
+          });
+        }
+      }, 280);
+    }
+  }, [mode, isPinned, isEggInPrimary, eggStatus, scheduleEggCollapse, setExpanded]);
 
   // Throttled Sync Pill Bounding Rect to Electron Main Process
   const syncRafId = useRef<number | null>(null);
@@ -86,7 +150,7 @@ export const IslandContainer: React.FC = () => {
       syncRafId.current = null;
       if (!window.electronAPI) return;
 
-      if (!primaryActivity || !containerRef.current) {
+      if ((!primaryActivity && !isEggInPrimary) || !containerRef.current) {
         window.electronAPI.syncPillBounds({ x: 0, y: 0, width: 0, height: 0 });
         return;
       }
@@ -99,7 +163,7 @@ export const IslandContainer: React.FC = () => {
 
       // Safety padding 10px to prevent hit-test border deadlock
       const safetyPadding = 10;
-      const bounds: RelativeRect = {
+      const bounds = {
         x: Math.max(0, Math.round(rect.left - safetyPadding)),
         y: Math.max(0, Math.round(rect.top - safetyPadding)),
         width: Math.round(rect.width + safetyPadding * 2),
@@ -107,53 +171,33 @@ export const IslandContainer: React.FC = () => {
       };
       window.electronAPI.syncPillBounds(bounds);
     });
-  }, [primaryActivity]);
+  }, [primaryActivity, isEggInPrimary]);
 
   // Listen to Electron events
   useEffect(() => {
     loadInitialSettings();
-    // Focus strictly on Music / Media: clear any previous mock/timer activities
-    clearActivities();
 
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      // 1. Cursor inside event from adaptive hit-testing
-      let leaveTimeout: NodeJS.Timeout | null = null;
+    if (window.electronAPI) {
       const unsubCursor = window.electronAPI.onCursorInside((inside) => {
-        if (inside) {
-          if (leaveTimeout) clearTimeout(leaveTimeout);
-          if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-          hoverTimeoutRef.current = setTimeout(() => {
-            setHovered(true);
-          }, 80);
-        } else {
-          if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-          leaveTimeout = setTimeout(() => {
-            setHovered(false);
-          }, 220);
-        }
+        setHovered(inside);
       });
 
-      // 2. Global hotkey toggle
       const unsubToggle = window.electronAPI.onToggleExpand(() => {
         setExpanded(mode !== 'expanded');
       });
 
-      // 3. Shortcut conflict toast
       const unsubConflict = window.electronAPI.onShortcutConflict((data) => {
         setShortcutConflict(data.key);
       });
 
-      // 4. Plugin approval request
       const unsubApproval = window.electronAPI.onPluginApprovalRequest((req) => {
         setApprovalRequest(req);
       });
 
-      // 5. Plugin activity incoming
       const unsubActivity = window.electronAPI.onNewActivityFromPlugin((act) => {
         addOrUpdateActivity(act as Activity);
       });
 
-      // 6. Real-time System Media (YouTube, Spotify, Chrome, Edge)
       const unsubMedia = window.electronAPI.onSystemMediaUpdate?.((act) => {
         addOrUpdateActivity(act as Activity);
       }) || (() => {});
@@ -172,7 +216,7 @@ export const IslandContainer: React.FC = () => {
         unsubMediaIdle();
       };
     }
-  }, [loadInitialSettings, mode, setHovered, setExpanded, setShortcutConflict, addOrUpdateActivity, removeActivity, clearActivities]);
+  }, [loadInitialSettings, mode, setHovered, setExpanded, setShortcutConflict, addOrUpdateActivity, removeActivity]);
 
   // Sync bounds whenever layout or visibility changes
   useEffect(() => {
@@ -184,13 +228,16 @@ export const IslandContainer: React.FC = () => {
       observer.observe(containerRef.current);
     }
     return () => observer.disconnect();
-  }, [syncBounds, mode, activities.length, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest]);
+  }, [syncBounds, mode, total, isEggInPrimary, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest]);
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isSettingsOpen) toggleSettings();
+        if (eggStatus === 'alert') {
+          useEggTimerStore.getState().dismissAlert();
+          setExpanded(false);
+        } else if (isSettingsOpen) toggleSettings();
         else if (isSimulatorOpen) setIsSimulatorOpen(false);
         else if (isDrawerOpen) toggleDrawer();
         else setExpanded(false);
@@ -203,21 +250,44 @@ export const IslandContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity]);
+  }, [eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity]);
 
+  // Secondary bubbles resolution
   let secondaryLeft: Activity | null = null;
   let secondaryRight: Activity | null = null;
+  let showEggBubble = false;
   let queuedCount = 0;
 
-  if (total === 2) {
-    const secondaryIdx = activeActivityIndex === 0 ? 1 : 0;
-    secondaryLeft = activities[secondaryIdx];
-  } else if (total >= 3) {
-    const leftIdx = (activeActivityIndex + 1) % total;
-    const rightIdx = (activeActivityIndex + 2) % total;
-    secondaryLeft = activities[leftIdx];
-    secondaryRight = activities[rightIdx];
-    queuedCount = Math.max(0, total - 3);
+  if (isEggInPrimary) {
+    // Egg is in Primary Pill
+    if (total === 1) {
+      secondaryRight = activities[0];
+    } else if (total >= 2) {
+      secondaryLeft = activities[0];
+      secondaryRight = activities[1];
+      queuedCount = Math.max(0, total - 2);
+    }
+  } else {
+    // Activity is in Primary Pill
+    if (isEggActive) {
+      showEggBubble = true;
+      if (total >= 2) {
+        const otherIdx = activeActivityIndex === 0 ? 1 : 0;
+        secondaryRight = activities[otherIdx];
+        queuedCount = Math.max(0, total - 2);
+      }
+    } else {
+      if (total === 2) {
+        const secondaryIdx = activeActivityIndex === 0 ? 1 : 0;
+        secondaryLeft = activities[secondaryIdx];
+      } else if (total >= 3) {
+        const leftIdx = (activeActivityIndex + 1) % total;
+        const rightIdx = (activeActivityIndex + 2) % total;
+        secondaryLeft = activities[leftIdx];
+        secondaryRight = activities[rightIdx];
+        queuedCount = Math.max(0, total - 3);
+      }
+    }
   }
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -249,80 +319,95 @@ export const IslandContainer: React.FC = () => {
         <div className="flex items-center justify-center gap-2">
           {/* Bubble Left */}
           <AnimatePresence>
-            {secondaryLeft && (
+            {showEggBubble ? (
+              <EggTimerBubble onClick={() => setActiveSlot('egg')} />
+            ) : secondaryLeft ? (
               <SecondaryBubble
                 key={`left-${secondaryLeft.id}`}
                 activity={secondaryLeft}
                 position="left"
                 onClick={() => {
-                  const idx = activities.findIndex((a) => a.id === secondaryLeft?.id);
-                  if (idx >= 0) selectActivityIndex(idx);
+                  if (isEggInPrimary) {
+                    setActiveSlot('activity');
+                    const idx = activities.findIndex((a) => a.id === secondaryLeft?.id);
+                    if (idx >= 0) selectActivityIndex(idx);
+                  } else {
+                    const idx = activities.findIndex((a) => a.id === secondaryLeft?.id);
+                    if (idx >= 0) selectActivityIndex(idx);
+                  }
                 }}
               />
-            )}
+            ) : null}
           </AnimatePresence>
 
           {/* Primary Main Pill */}
           <AnimatePresence>
-            {primaryActivity && (
-              <PrimaryPill
-                key={primaryActivity.id}
-                activity={primaryActivity}
-                isExpanded={mode === 'expanded'}
-                isPinned={isPinned}
-                queuedCount={queuedCount}
-                onTogglePin={togglePinned}
-                onToggleExpand={() => {
-                  const nextExpanded = mode !== 'expanded';
-                  setExpanded(nextExpanded);
-                  requestAnimationFrame(() => {
-                    if (window.electronAPI) {
-                      const centerX = window.innerWidth / 2;
-                      if (nextExpanded) {
-                        window.electronAPI.syncPillBounds({
-                          x: Math.max(0, Math.round(centerX - 210)),
-                          y: 0,
-                          width: 420,
-                          height: 175,
-                        });
-                      } else {
-                        window.electronAPI.syncPillBounds({
-                          x: Math.max(0, Math.round(centerX - 120)),
-                          y: 0,
-                          width: 240,
-                          height: 56,
-                        });
-                      }
+            <PrimaryPill
+              key={isEggInPrimary ? 'primary-egg-pill' : (primaryActivity?.id || 'idle-pill')}
+              activity={isEggInPrimary ? null : primaryActivity}
+              isEggTimer={isEggInPrimary}
+              isExpanded={mode === 'expanded'}
+              isPinned={isPinned}
+              queuedCount={queuedCount}
+              onEggStart={handleEggStart}
+              onTogglePin={togglePinned}
+              onToggleExpand={() => {
+                const nextExpanded = mode !== 'expanded';
+                setExpanded(nextExpanded);
+                if (nextExpanded && isEggInPrimary && eggStatus === 'running') {
+                  scheduleEggCollapse(4000);
+                }
+                requestAnimationFrame(() => {
+                  if (window.electronAPI) {
+                    const centerX = window.innerWidth / 2;
+                    if (nextExpanded) {
+                      window.electronAPI.syncPillBounds({
+                        x: Math.max(0, Math.round(centerX - 210)),
+                        y: 0,
+                        width: 420,
+                        height: 175,
+                      });
+                    } else {
+                      window.electronAPI.syncPillBounds({
+                        x: Math.max(0, Math.round(centerX - 120)),
+                        y: 0,
+                        width: 240,
+                        height: 56,
+                      });
                     }
-                  });
-                }}
-                onToggleDrawer={toggleDrawer}
-                onDismiss={() => {
-                  if (primaryActivity) removeActivity(primaryActivity.id);
-                }}
-                onActionClick={(actionId) => {
-                  // Custom action handlers (play/pause toggle, etc.)
-                  if (primaryActivity && actionId === 'play') {
-                    if (window.electronAPI) {
-                      window.electronAPI.togglePlayPause();
-                    }
-                    const isPlaying = primaryActivity.actions?.find((a) => a.id === 'play')?.icon === 'Pause';
-                    addOrUpdateActivity({
-                      ...primaryActivity,
-                      subtitle: primaryActivity.subtitle?.replace(
-                        isPlaying ? 'Playing' : 'Paused',
-                        isPlaying ? 'Paused' : 'Playing'
-                      ),
-                      actions: primaryActivity.actions?.map((a) =>
-                        a.id === 'play'
-                          ? { ...a, icon: isPlaying ? 'Play' : 'Pause', label: isPlaying ? 'Play' : 'Pause' }
-                          : a
-                      ),
-                    });
                   }
-                }}
-              />
-            )}
+                });
+              }}
+              onToggleDrawer={toggleDrawer}
+              onDismiss={() => {
+                if (isEggInPrimary) {
+                  useEggTimerStore.getState().cancelTimer();
+                  setExpanded(false);
+                } else if (primaryActivity) {
+                  removeActivity(primaryActivity.id);
+                }
+              }}
+              onActionClick={(actionId) => {
+                if (primaryActivity && actionId === 'play') {
+                  if (window.electronAPI) {
+                    window.electronAPI.togglePlayPause();
+                  }
+                  const isPlaying = primaryActivity.actions?.find((a) => a.id === 'play')?.icon === 'Pause';
+                  addOrUpdateActivity({
+                    ...primaryActivity,
+                    subtitle: primaryActivity.subtitle?.replace(
+                      isPlaying ? 'Playing' : 'Paused',
+                      isPlaying ? 'Paused' : 'Playing'
+                    ),
+                    actions: primaryActivity.actions?.map((a) =>
+                      a.id === 'play'
+                        ? { ...a, icon: isPlaying ? 'Play' : 'Pause', label: isPlaying ? 'Play' : 'Pause' }
+                        : a
+                    ),
+                  });
+                }
+              }}
+            />
           </AnimatePresence>
 
           {/* Bubble Right */}
@@ -333,8 +418,14 @@ export const IslandContainer: React.FC = () => {
                 activity={secondaryRight}
                 position="right"
                 onClick={() => {
-                  const idx = activities.findIndex((a) => a.id === secondaryRight?.id);
-                  if (idx >= 0) selectActivityIndex(idx);
+                  if (isEggInPrimary) {
+                    setActiveSlot('activity');
+                    const idx = activities.findIndex((a) => a.id === secondaryRight?.id);
+                    if (idx >= 0) selectActivityIndex(idx);
+                  } else {
+                    const idx = activities.findIndex((a) => a.id === secondaryRight?.id);
+                    if (idx >= 0) selectActivityIndex(idx);
+                  }
                 }}
               />
             )}
@@ -354,8 +445,9 @@ export const IslandContainer: React.FC = () => {
         <QueueDrawer
           isOpen={isDrawerOpen}
           activities={activities}
-          activeId={primaryActivity?.id}
+          activeId={isEggInPrimary ? undefined : primaryActivity?.id}
           onSelect={(index) => {
+            setActiveSlot('activity');
             selectActivityIndex(index);
             toggleDrawer();
           }}
@@ -383,7 +475,10 @@ export const IslandContainer: React.FC = () => {
         onOpenSettings={toggleSettings}
         onOpenDrawer={toggleDrawer}
         onOpenSimulator={() => setIsSimulatorOpen(true)}
-        onClearAll={clearActivities}
+        onClearAll={() => {
+          clearActivities();
+          useEggTimerStore.getState().cancelTimer();
+        }}
         onQuit={() => {
           if (window.electronAPI) window.electronAPI.closeApp();
         }}

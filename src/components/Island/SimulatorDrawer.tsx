@@ -1,8 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_ACTIVITIES } from '../../providers/mockSimulator';
 import { useActivityStore } from '../../stores/activityStore';
-import { Sparkles, X, PlusCircle, Trash2, Layers } from 'lucide-react';
+import { useEggTimerStore } from '../../stores/eggTimerStore';
+import { Sparkles, X, PlusCircle, Trash2, Layers, Egg, BellRing, FastForward, RotateCcw } from 'lucide-react';
 
 interface SimulatorDrawerProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface SimulatorDrawerProps {
 
 export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({ isOpen, onClose }) => {
   const { addOrUpdateActivity, clearActivities } = useActivityStore();
+  const { startTimer, cancelTimer, fastForwardTo, status: eggStatus } = useEggTimerStore();
 
   if (!isOpen) return null;
 
@@ -35,7 +37,7 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({ isOpen, onClos
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-        className="w-[400px] max-h-[440px] bg-black/95 border border-amber-500/25 backdrop-blur-2xl rounded-3xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-50 flex flex-col text-white select-none mt-2 overflow-hidden"
+        className="w-[420px] max-h-[480px] bg-black/95 border border-amber-500/25 backdrop-blur-2xl rounded-3xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-50 flex flex-col text-white select-none mt-2 overflow-hidden"
       >
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3 shrink-0">
           <div className="flex items-center gap-2">
@@ -56,8 +58,48 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({ isOpen, onClos
           </button>
         </div>
 
+        {/* ─── EGG TIMER TESTING CONTROLS ─── */}
+        <div className="mb-3 p-2.5 rounded-2xl bg-white/[0.04] border border-white/10 flex flex-col gap-2 shrink-0">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-1.5 font-medium text-white/90">
+              <Egg className="w-3.5 h-3.5 text-amber-300" strokeWidth={1.5} />
+              Hẹn giờ luộc trứng: <span className="uppercase text-amber-400 font-semibold">{eggStatus}</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 text-[11px]">
+            <button
+              type="button"
+              onClick={startTimer}
+              className="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <Egg className="w-3 h-3" strokeWidth={1.5} /> Bắt đầu 15p
+            </button>
+            <button
+              type="button"
+              onClick={() => fastForwardTo(5000)}
+              className="py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <FastForward className="w-3 h-3" strokeWidth={1.5} /> Còn 5 giây
+            </button>
+            <button
+              type="button"
+              onClick={() => fastForwardTo(0)}
+              className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <BellRing className="w-3 h-3" strokeWidth={1.5} /> Alert 00:00
+            </button>
+            <button
+              type="button"
+              onClick={cancelTimer}
+              className="py-1.5 px-2 rounded-xl bg-white/5 hover:bg-white/15 text-white/70 font-medium flex items-center justify-center gap-1 transition-all"
+            >
+              <RotateCcw className="w-3 h-3" strokeWidth={1.5} /> Reset Idle
+            </button>
+          </div>
+        </div>
+
         {/* Quick Batch Actions */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 shrink-0">
           <button
             type="button"
             onClick={handleInjectAllMulti}
@@ -70,7 +112,7 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({ isOpen, onClos
             type="button"
             onClick={clearActivities}
             className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-300 border border-white/10 transition-colors"
-            title="Xoá hết hoạt động"
+            title="Xóa hết hoạt động"
           >
             <Trash2 className="w-4 h-4" strokeWidth={1.5} />
           </button>
@@ -81,11 +123,11 @@ export const SimulatorDrawer: React.FC<SimulatorDrawerProps> = ({ isOpen, onClos
           {[
             { key: 'spotify', title: 'Spotify Music', subtitle: 'Blinding Lights — The Weeknd', icon: '🎵' },
             { key: 'pomodoro', title: 'Focus Pomodoro', subtitle: 'Deep Work Session (25 min)', icon: '⏱️' },
-            { key: 'download', title: 'Steam Download', subtitle: 'Cyberpunk 2077 Update (45.2 MB/s)', icon: '💾' },
+            { key: 'download', title: 'Steam Download', subtitle: 'Cyberpunk 2077 Update (45.2 MB/s)', icon: '⬇️' },
             { key: 'grabFood', title: 'GrabFood Delivery', subtitle: 'Tài xế đang giao Phúc Long (6 mins)', icon: '🛵' },
-            { key: 'flight', title: 'Flighty Flight Tracker', subtitle: 'VN230 SGN ➔ HAN (FL360)', icon: '✈️' },
-            { key: 'sports', title: 'Live Sports Score', subtitle: 'Arsenal 2 - 1 Chelsea (78\')', icon: '⚽' },
-            { key: 'github', title: 'GitHub Actions Build', subtitle: 'Build & Deploy Production #482', icon: '🛠️' },
+            { key: 'flight', title: 'Flighty Flight Tracker', subtitle: 'VN230 SGN ✈️ HAN (FL360)', icon: '✈️' },
+            { key: 'sports', title: 'Live Sports Score', subtitle: 'Arsenal 2 - 1 Chelsea (78\')', icon: '🏆' },
+            { key: 'github', title: 'GitHub Actions Build', subtitle: 'Build & Deploy Production #482', icon: '🐙' },
             { key: 'system', title: 'System Resource Monitor', subtitle: 'CPU 24% • RAM 58% • Net Traffic', icon: '📊' },
           ].map((item) => (
             <div
