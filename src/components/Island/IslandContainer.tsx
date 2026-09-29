@@ -272,6 +272,14 @@ export const IslandContainer: React.FC = () => {
         else if (isSimulatorOpen) setIsSimulatorOpen(false);
         else if (isDrawerOpen) toggleDrawer();
         else setExpanded(false);
+      } else if (e.key.toLowerCase() === 'a' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        // Quick trigger Shift Alert (Ctrl+Shift+A)
+        e.preventDefault();
+        useShiftScheduleStore.getState().testTriggerNow();
+      } else if (e.key.toLowerCase() === 't' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        // Quick create 1-minute real-time countdown task (Ctrl+Shift+T)
+        e.preventDefault();
+        useShiftScheduleStore.getState().createRealtimeTestTask(1);
       } else if (e.key.toLowerCase() === 'e' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
         // Quick trigger egg boiling timer (Ctrl+Shift+E)
         e.preventDefault();

@@ -2,8 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Activity } from '../../types/activity';
 import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
-
-import { Check, ChevronRight, ChevronDown, X, Trash2, CheckCircle2 } from 'lucide-react';
+import { Check, ChevronRight, ChevronDown, X, Trash2, CheckCircle2, BellRing, Clock } from 'lucide-react';
 
 interface QueueDrawerProps {
   isOpen: boolean;
@@ -18,7 +17,7 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { tasks, markDone, deleteTask, testTriggerNow } = useShiftScheduleStore();
+  const { tasks, markDone, deleteTask, testTriggerNow, createRealtimeTestTask } = useShiftScheduleStore();
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -30,15 +29,15 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -10, scale: 0.96 }}
         transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-        className="w-[420px] max-h-[400px] bg-black/95 border border-white/15 backdrop-blur-2xl rounded-[20px] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-40 flex flex-col text-white select-none mt-2 overflow-hidden"
+        className="w-[430px] max-h-[430px] bg-black/95 border border-white/15 backdrop-blur-2xl rounded-[20px] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-40 flex flex-col text-white select-none mt-2 overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5 shrink-0">
+        <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2 shrink-0">
           <div className="flex flex-col">
             <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">
               LỊCH LÀM VIỆC HÔM NAY
             </span>
-            <span className="text-[10px] text-white/40">Vuốt phải để đánh dấu xong • Vuốt trái để xóa</span>
+            <span className="text-[10px] text-white/40">Vuốt phải: Đã xong • Vuốt trái: Xóa</span>
           </div>
           <button
             type="button"
@@ -46,6 +45,32 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
             className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={15} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* ─── QUICK 1-CLICK TEST BUTTONS RIGHT IN DRAWER ─── */}
+        <div className="grid grid-cols-2 gap-2 mb-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              testTriggerNow();
+              onClose();
+            }}
+            className="py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <BellRing size={13} strokeWidth={2} />
+            <span>⚡ Thử Alert ngay</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              createRealtimeTestTask(1);
+              onClose();
+            }}
+            className="py-1.5 px-2.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Clock size={13} strokeWidth={2} />
+            <span>⏰ Đặt task 1 phút nữa (Test Realtime)</span>
           </button>
         </div>
 
@@ -122,7 +147,7 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pt-2.5 mt-2 border-t border-white/10 text-[11px] text-white/70 space-y-2"
+                      className="pt-2 mt-2 border-t border-white/10 text-[11px] text-white/70 space-y-2"
                     >
                       <p className="leading-relaxed text-white/90">{task.rawDescription}</p>
                       <div className="flex items-center gap-2 pt-1">

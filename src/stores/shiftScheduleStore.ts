@@ -76,8 +76,9 @@ interface ShiftScheduleStore {
   toggleTaskEnabled: (taskId: string) => void;
   importFromJSON: (jsonString: string) => boolean;
   updateSettings: (settingsUpdates: Partial<ScheduleNotificationSettings>) => void;
-  testTriggerNow: (taskId: string) => void;
-  testWarningNow: (taskId: string) => void;
+  testTriggerNow: (taskId?: string) => void;
+  testWarningNow: (taskId?: string) => void;
+  createRealtimeTestTask: (delayMinutes?: number) => void;
   resetAllToPending: () => void;
 }
 
@@ -386,22 +387,38 @@ export const useShiftScheduleStore = create<ShiftScheduleStore>((set, get) => {
       saveSettings(updated);
     },
 
-    testTriggerNow: (taskId: string) => {
+    testTriggerNow: (taskId?: string) => {
       const { tasks } = get();
+      const targetId = taskId || (tasks.find((t) => t.enabled && t.status !== 'done')?.id || tasks[0]?.id);
+      if (!targetId) return;
+
       const nextTasks = tasks.map((t) =>
-        t.id === taskId ? { ...t, status: 'alert' as const } : t
+        t.id === targetId ? { ...t, status: 'alert' as const } : t
       );
-      set({ tasks: nextTasks, activeAlertTaskId: taskId });
+      set({ tasks: nextTasks, activeAlertTaskId: targetId });
       saveTasks(nextTasks);
     },
 
-    testWarningNow: (taskId: string) => {
+    testWarningNow: (taskId?: string) => {
       const { tasks } = get();
+      const targetId = taskId || (tasks.find((t) => t.enabled && t.status !== 'done')?.id || tasks[0]?.id);
+      if (!targetId) return;
+
       const nextTasks = tasks.map((t) =>
-        t.id === taskId ? { ...t, status: 'warning' as const } : t
+        t.id === targetId ? { ...t, status: 'warning' as const } : t
       );
       set({ tasks: nextTasks });
       saveTasks(nextTasks);
+    },
+
+    createRealtimeTestTask: (delayMinutes = 1) => {
+      const now = new Date();
+      const future = new Date(now.getTime() + delayMinutes * 60 * 1000);
+      const hh = String(future.getHours()).padStart(2, '0');
+      const mm = String(future.getMinutes()).padStart(2, '0');
+      const timeStr = `${hh}:${mm}`;
+
+      get().addTask(timeStr, 'Dọn nhà vệ sinh, kiểm tra phòng, chụp báo cáo 1 giờ');
     },
 
     resetAllToPending: () => {
@@ -429,7 +446,7 @@ export const getNextTaskInfo = (tasks: ScheduleTask[]): {
   const now = new Date();
   const nowMs = now.getTime();
 
-  // Check if any task is currently in alert or warning
+  // Check if any task is currently in alert
   const alertTask = tasks.find((t) => t.enabled && t.status === 'alert');
   if (alertTask) {
     return {
@@ -441,6 +458,7 @@ export const getNextTaskInfo = (tasks: ScheduleTask[]): {
     };
   }
 
+  // Check if any task is in warning
   const warningTask = tasks.find((t) => t.enabled && t.status === 'warning');
   if (warningTask) {
     const [h, m] = warningTask.time.split(':').map(Number);

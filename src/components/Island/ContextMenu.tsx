@@ -9,8 +9,11 @@ import {
   Power,
   Trash2,
   Egg,
+  BellRing,
+  Clock,
 } from 'lucide-react';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
+import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
 
 interface ContextMenuProps {
   isOpen: boolean;
@@ -37,7 +40,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onQuit,
   onClose,
 }) => {
-  const { status: eggStatus, startTimer, cancelTimer, dismissAlert } = useEggTimerStore();
+  const { status: eggStatus, startTimer, cancelTimer, dismissAlert: dismissEggAlert } = useEggTimerStore();
+  const { testTriggerNow, createRealtimeTestTask } = useShiftScheduleStore();
 
   if (!isOpen) return null;
 
@@ -58,22 +62,49 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           transition={{ duration: 0.14 }}
           style={{ top: position.y, left: position.x }}
           onClick={(e) => e.stopPropagation()}
-          className="absolute w-56 bg-black/95 border border-white/20 backdrop-blur-2xl rounded-2xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.8)] text-white select-none text-xs space-y-0.5"
+          className="absolute w-60 bg-black/95 border border-white/20 backdrop-blur-2xl rounded-2xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.8)] text-white select-none text-xs space-y-0.5"
         >
-          {/* Egg Timer Quick Action */}
+          {/* ─── QUICK TEST ACTIONS FOR SHIFT REMINDER ─── */}
+          <button
+            type="button"
+            onClick={() => {
+              testTriggerNow();
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition-colors font-medium cursor-pointer"
+          >
+            <BellRing className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
+            <span>⚡ Thử ngay thông báo đến giờ (Alert)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              createRealtimeTestTask(1);
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors cursor-pointer"
+          >
+            <Clock className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
+            <span>⏰ Đặt thử task 1 phút nữa (Test Realtime)</span>
+          </button>
+
+          <div className="h-px bg-white/10 my-1" />
+
+          {/* ─── EGG TIMER ACTION ─── */}
           <button
             type="button"
             onClick={() => {
               if (eggStatus === 'idle') {
                 startTimer();
               } else if (eggStatus === 'alert') {
-                dismissAlert();
+                dismissEggAlert();
               } else {
                 cancelTimer();
               }
               onClose();
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-amber-300 hover:text-amber-200 transition-colors font-medium"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
           >
             <Egg className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
             <span>
@@ -90,6 +121,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           <button
             type="button"
             onClick={() => {
+              onOpenDrawer();
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
+          >
+            <Layers className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
+            <span>Xem lịch hôm nay (Queue Drawer)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
               onTogglePin();
               onClose();
             }}
@@ -97,18 +140,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             {isPinned ? <PinOff className="w-4 h-4 text-sky-400" strokeWidth={1.5} /> : <Pin className="w-4 h-4 text-white/70" strokeWidth={1.5} />}
             <span>{isPinned ? 'Bỏ ghim mở rộng' : 'Ghim mở rộng'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              onOpenDrawer();
-              onClose();
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
-          >
-            <Layers className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
-            <span>Hàng đợi hoạt động</span>
           </button>
 
           <button
