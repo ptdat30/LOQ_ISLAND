@@ -13,20 +13,23 @@ export function useFishingLoop() {
   const saveToStorage = useFishingStore((s) => s.saveToStorage);
   const celebrationTier = useFishingStore((s) => s.celebrationTier);
   const clearCelebration = useFishingStore((s) => s.clearCelebration);
+  const collectionCompletedCelebration = useFishingStore((s) => s.collectionCompletedCelebration);
 
   const speedSeconds = getFishingSpeedSeconds(currentRodId, ownedVehicleIds);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
   const celebrationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Idle Fishing Loop
+  // 1. Idle Fishing Loop (paused during celebration modals)
   useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
-    if (isFishingActive) {
+    const isCelebrating = celebrationTier !== null || collectionCompletedCelebration;
+
+    if (isFishingActive && !isCelebrating) {
       const intervalMs = Math.max(250, Math.round(speedSeconds * 1000));
       intervalRef.current = setInterval(() => {
         catchRound();
@@ -39,7 +42,7 @@ export function useFishingLoop() {
         intervalRef.current = null;
       }
     };
-  }, [isFishingActive, speedSeconds, catchRound]);
+  }, [isFishingActive, speedSeconds, catchRound, celebrationTier, collectionCompletedCelebration]);
 
   // 2. Periodic Auto-Save every 10 seconds
   useEffect(() => {

@@ -312,6 +312,12 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
 
   catchRound: () => {
     const state = get();
+
+    // Guard: Do not process new catches if celebration modal is currently active
+    if (state.celebrationTier !== null || state.collectionCompletedCelebration) {
+      return null;
+    }
+
     const currentBait = state.currentBaitId;
     const baitCount = currentBait ? state.baitInventory[currentBait] || 0 : 0;
     const currentRod = state.currentRodId;
@@ -442,9 +448,15 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
     }
     const pastHourGold = cleanHistory.reduce((sum, h) => sum + h.gold, 0);
 
-    const lastFish = result.caughtItems.length > 0 ? result.caughtItems[result.caughtItems.length - 1].fish : null;
+    // Find celebratory fish (highest tier in batch if >= 5) or fallback to last caught
+    const celebratoryFishItem = result.caughtItems
+      .filter((item) => item.fish.tier >= 5)
+      .sort((a, b) => b.fish.tier - a.fish.tier)[0];
+    const celebratoryFish = celebratoryFishItem ? celebratoryFishItem.fish : null;
 
-    let celebrationTier = state.celebrationTier;
+    const lastFish = celebratoryFish || (result.caughtItems.length > 0 ? result.caughtItems[result.caughtItems.length - 1].fish : null);
+
+    let celebrationTier: FishTier | null = null;
     if (result.highestTierInBatch >= 5) {
       celebrationTier = result.highestTierInBatch;
     }
