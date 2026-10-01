@@ -323,6 +323,14 @@ export const IslandContainer: React.FC = () => {
         cycleActivity('next');
       } else if (e.key === 'ArrowLeft' && (e.ctrlKey || e.metaKey)) {
         cycleActivity('prev');
+      } else if (e.altKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setActiveSlot('activity');
+        setExpanded(true);
+      } else if (e.altKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setActiveSlot('fishing');
+        setExpanded(true);
       }
     };
 
@@ -386,6 +394,16 @@ export const IslandContainer: React.FC = () => {
     }
   }
 
+  const handleSecondaryActivityClick = useCallback(
+    (act: Activity) => {
+      setActiveSlot('activity');
+      const idx = activities.findIndex((a) => a.id === act.id);
+      if (idx >= 0) selectActivityIndex(idx);
+      setExpanded(true);
+    },
+    [activities, selectActivityIndex, setExpanded]
+  );
+
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setContextMenuPos({ x: e.clientX, y: e.clientY });
@@ -434,16 +452,7 @@ export const IslandContainer: React.FC = () => {
                 key={`left-${secondaryLeft.id}`}
                 activity={secondaryLeft}
                 position="left"
-                onClick={() => {
-                  if (isEggInPrimary) {
-                    setActiveSlot('activity');
-                    const idx = activities.findIndex((a) => a.id === secondaryLeft?.id);
-                    if (idx >= 0) selectActivityIndex(idx);
-                  } else {
-                    const idx = activities.findIndex((a) => a.id === secondaryLeft?.id);
-                    if (idx >= 0) selectActivityIndex(idx);
-                  }
-                }}
+                onClick={() => handleSecondaryActivityClick(secondaryLeft)}
               />
             ) : null}
           </AnimatePresence>
@@ -471,13 +480,24 @@ export const IslandContainer: React.FC = () => {
                 setActiveSlot('fishing');
                 setExpanded(true);
               }}
+              hasMedia={total > 0}
+              onOpenMedia={() => {
+                setActiveSlot('activity');
+                setExpanded(true);
+              }}
               onTogglePin={togglePinned}
               onToggleExpand={() => {
                 const nextExpanded = mode !== 'expanded';
-                setExpanded(nextExpanded);
-                if (!nextExpanded && activeSlot === 'fishing') {
-                  setActiveSlot(total > 0 ? 'activity' : 'shift');
+                if (nextExpanded) {
+                  if (!isFishingInPrimary && !isEggInPrimary && primaryActivity) {
+                    setActiveSlot('activity');
+                  }
+                } else {
+                  if (activeSlot === 'fishing') {
+                    setActiveSlot(total > 0 ? 'activity' : 'shift');
+                  }
                 }
+                setExpanded(nextExpanded);
                 if (nextExpanded && isEggInPrimary && eggStatus === 'running') {
                   scheduleEggCollapse(4000);
                 }
@@ -527,16 +547,7 @@ export const IslandContainer: React.FC = () => {
                 key={`right-${secondaryRight.id}`}
                 activity={secondaryRight}
                 position="right"
-                onClick={() => {
-                  if (isEggInPrimary) {
-                    setActiveSlot('activity');
-                    const idx = activities.findIndex((a) => a.id === secondaryRight?.id);
-                    if (idx >= 0) selectActivityIndex(idx);
-                  } else {
-                    const idx = activities.findIndex((a) => a.id === secondaryRight?.id);
-                    if (idx >= 0) selectActivityIndex(idx);
-                  }
-                }}
+                onClick={() => handleSecondaryActivityClick(secondaryRight)}
               />
             )}
           </AnimatePresence>
@@ -576,6 +587,12 @@ export const IslandContainer: React.FC = () => {
         isOpen={contextMenuPos !== null}
         position={contextMenuPos || { x: 0, y: 0 }}
         isPinned={isPinned}
+        hasMedia={total > 0}
+        mediaTitle={primaryActivity?.title}
+        onOpenMedia={() => {
+          setActiveSlot('activity');
+          setExpanded(true);
+        }}
         onTogglePin={togglePinned}
         onOpenSettings={toggleSettings}
         onOpenDrawer={toggleDrawer}

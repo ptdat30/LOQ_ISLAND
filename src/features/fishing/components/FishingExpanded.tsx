@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, Fish, Coins, Gem, Dna } from 'lucide-react';
+import { X, ArrowLeft, Fish, Coins, Gem, Dna, Music } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { FishingScene } from './FishingScene';
 import { FishBasket } from './FishBasket';
@@ -14,6 +14,8 @@ import { CatchCelebration } from './CatchCelebration';
 
 interface FishingExpandedProps {
   onCollapse: () => void;
+  onOpenMedia?: () => void;
+  hasMedia?: boolean;
   renderShopSubView?: React.ReactNode;
   renderSkillTreeSubView?: React.ReactNode;
   renderCustomizationSubView?: React.ReactNode;
@@ -22,6 +24,8 @@ interface FishingExpandedProps {
 
 export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   onCollapse,
+  onOpenMedia,
+  hasMedia,
   renderShopSubView,
   renderSkillTreeSubView,
   renderCustomizationSubView,
@@ -105,6 +109,17 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               </div>
             )}
           </div>
+
+          {hasMedia && onOpenMedia && (
+            <button
+              type="button"
+              onClick={onOpenMedia}
+              className="p-1 rounded-md text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors cursor-pointer shrink-0"
+              title="Chuyển sang Trình phát nhạc (Alt+M)"
+            >
+              <Music className="w-4 h-4" strokeWidth={1.5} />
+            </button>
+          )}
 
           <button
             type="button"

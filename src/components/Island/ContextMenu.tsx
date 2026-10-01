@@ -10,6 +10,7 @@ import {
   Egg,
   Fish,
   BookOpen,
+  Music,
 } from 'lucide-react';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
 import { useFishingStore } from '../../features/fishing/stores/fishingStore';
@@ -18,6 +19,9 @@ interface ContextMenuProps {
   isOpen: boolean;
   position: { x: number; y: number };
   isPinned: boolean;
+  hasMedia?: boolean;
+  mediaTitle?: string;
+  onOpenMedia?: () => void;
   onTogglePin: () => void;
   onOpenSettings: () => void;
   onOpenDrawer: () => void;
@@ -31,6 +35,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   isOpen,
   position,
   isPinned,
+  hasMedia,
+  mediaTitle,
+  onOpenMedia,
   onTogglePin,
   onOpenSettings,
   onOpenDrawer,
@@ -124,6 +131,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <Settings className="w-4 h-4 text-white/70" strokeWidth={1.5} />
             <span>Cài đặt</span>
           </button>
+
+          {hasMedia && onOpenMedia && (
+            <button
+              type="button"
+              onClick={() => {
+                onOpenMedia();
+                onClose();
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer"
+            >
+              <Music className="w-4 h-4 text-emerald-400" strokeWidth={1.5} />
+              <span className="truncate">
+                {mediaTitle ? `Phát nhạc: ${mediaTitle}` : 'Trình phát nhạc (Alt+M)'}
+              </span>
+            </button>
+          )}
 
           <button
             type="button"

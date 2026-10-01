@@ -30,6 +30,8 @@ interface PrimaryPillProps {
   onActionClick?: (actionId: string) => void;
   onEggStart?: () => void;
   onOpenFishing?: () => void;
+  onOpenMedia?: () => void;
+  hasMedia?: boolean;
 }
 
 // Lightweight spring - settles fast, no lingering micro-movements
@@ -49,6 +51,8 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
   onActionClick,
   onEggStart,
   onOpenFishing,
+  onOpenMedia,
+  hasMedia,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { status: eggStatus, dismissAlert: dismissEggAlert, startTimer: startEggTimer } = useEggTimerStore();
@@ -322,7 +326,11 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
       >
         {/* Priority 0: Fishing Game Expanded */}
         {isFishing ? (
-          <FishingExpanded onCollapse={onToggleExpand} />
+          <FishingExpanded
+            onCollapse={onToggleExpand}
+            onOpenMedia={onOpenMedia}
+            hasMedia={hasMedia}
+          />
         ) : showShiftAlert ? (
           <ShiftExpanded task={alertShiftTask} onCollapse={onToggleExpand} />
         ) : showEggExpanded ? (
