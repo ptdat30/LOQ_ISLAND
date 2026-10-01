@@ -80,8 +80,8 @@ export const IslandContainer: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && (e.key === 'f' || e.key === 'F')) {
         e.preventDefault();
-        if (activeSlot === 'fishing') {
-          setActiveSlot('shift');
+        if (activeSlot === 'fishing' && mode === 'expanded') {
+          setActiveSlot(total > 0 ? 'activity' : 'shift');
           setExpanded(false);
         } else {
           setActiveSlot('fishing');
@@ -96,7 +96,7 @@ export const IslandContainer: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeSlot, setExpanded]);
+  }, [activeSlot, mode, total, setExpanded]);
 
   // Priority resolution for primary pill
   const isShiftAlert = !!activeShiftAlertTask;
@@ -107,7 +107,9 @@ export const IslandContainer: React.FC = () => {
     isCelebrationTakeover ||
     (!isShiftAlert &&
       !isEggInPrimary &&
-      (activeSlot === 'fishing' || (total === 0 && !isEggActive && isFishingActive)));
+      (mode === 'expanded'
+        ? activeSlot === 'fishing'
+        : total === 0 && !isEggActive && activeSlot === 'fishing'));
 
   const { loadInitialSettings, setShortcutConflict } = useSettingsStore();
 
@@ -258,6 +260,7 @@ export const IslandContainer: React.FC = () => {
 
       const unsubMedia = window.electronAPI.onSystemMediaUpdate?.((act) => {
         addOrUpdateActivity(act as Activity);
+        setActiveSlot((prev) => (prev === 'fishing' ? 'activity' : prev));
       }) || (() => {});
 
       const unsubMediaIdle = window.electronAPI.onSystemMediaIdle?.(() => {
@@ -300,7 +303,10 @@ export const IslandContainer: React.FC = () => {
           setExpanded(false);
         } else if (isSettingsOpen) toggleSettings();
         else if (isDrawerOpen) toggleDrawer();
-        else setExpanded(false);
+        else {
+          setActiveSlot((prev) => (prev === 'fishing' ? (total > 0 ? 'activity' : 'shift') : prev));
+          setExpanded(false);
+        }
       } else if (e.key.toLowerCase() === 'e' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
         // Quick trigger egg boiling timer (Ctrl+Shift+E)
         e.preventDefault();
@@ -348,6 +354,15 @@ export const IslandContainer: React.FC = () => {
       secondaryLeft = activities[0];
       secondaryRight = activities[1];
       queuedCount = Math.max(0, total - 2);
+    }
+  } else if (isFishingInPrimary) {
+    // Fishing is in Primary Pill (e.g. during celebration takeover or expanded view)
+    if (isEggActive) {
+      showEggBubble = true;
+    }
+    if (total >= 1) {
+      secondaryRight = activities[0];
+      queuedCount = Math.max(0, total - 1);
     }
   } else {
     // Activity is in Primary Pill
@@ -461,6 +476,9 @@ export const IslandContainer: React.FC = () => {
               onToggleExpand={() => {
                 const nextExpanded = mode !== 'expanded';
                 setExpanded(nextExpanded);
+                if (!nextExpanded && activeSlot === 'fishing') {
+                  setActiveSlot(total > 0 ? 'activity' : 'shift');
+                }
                 if (nextExpanded && isEggInPrimary && eggStatus === 'running') {
                   scheduleEggCollapse(4000);
                 }
@@ -471,7 +489,7 @@ export const IslandContainer: React.FC = () => {
                   dismissShiftAlert(activeShiftAlertTask.id);
                   setExpanded(false);
                 } else if (isFishingInPrimary) {
-                  setActiveSlot('shift');
+                  setActiveSlot(total > 0 ? 'activity' : 'shift');
                   setExpanded(false);
                 } else if (isEggInPrimary) {
                   useEggTimerStore.getState().cancelTimer();
