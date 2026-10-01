@@ -33,6 +33,9 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   const dismissOfflineReport = useFishingStore((s) => s.dismissOfflineReport);
   const newFishNotification = useFishingStore((s) => s.newFishNotification);
   const clearNewFishNotification = useFishingStore((s) => s.clearNewFishNotification);
+  const celebrationTier = useFishingStore((s) => s.celebrationTier);
+  const lastCaughtFish = useFishingStore((s) => s.lastCaughtFish);
+  const clearCelebration = useFishingStore((s) => s.clearCelebration);
 
   // Auto clear new fish notification after 3 seconds
   React.useEffect(() => {
@@ -209,7 +212,16 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
       </div>
 
       {/* Catch Celebration Overlay (Tier 5+) */}
-      <CatchCelebration />
+      <AnimatePresence>
+        {celebrationTier && lastCaughtFish && (
+          <CatchCelebration
+            key={lastCaughtFish.id + '-' + celebrationTier}
+            fish={lastCaughtFish}
+            tier={celebrationTier}
+            onClose={clearCelebration}
+          />
+        )}
+      </AnimatePresence>
 
       {/* 84/84 Full Collection Modal */}
       <CollectionCompletionModal />

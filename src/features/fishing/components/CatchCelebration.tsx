@@ -1,30 +1,39 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Trophy, Crown, X } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { TIER_COLORS } from '../data/ratesData';
 import { getFishImageUrl } from '../data/fishImages';
+import type { Fish as FishType, FishTier } from '../../../types/fishing';
 
-export const CatchCelebration: React.FC = () => {
-  const celebrationTier = useFishingStore((s) => s.celebrationTier);
-  const lastCaughtFish = useFishingStore((s) => s.lastCaughtFish);
-  const clearCelebration = useFishingStore((s) => s.clearCelebration);
+interface CatchCelebrationProps {
+  fish?: FishType | null;
+  tier?: number | null;
+  onClose?: () => void;
+}
 
-  // Freeze the celebrated fish upon mount to prevent any auto-fishing jump or overwrite
-  const [celebratedFish] = useState(() => lastCaughtFish);
+export const CatchCelebration: React.FC<CatchCelebrationProps> = ({
+  fish: propFish,
+  tier: propTier,
+  onClose: propOnClose,
+}) => {
+  const storeTier = useFishingStore((s) => s.celebrationTier);
+  const storeFish = useFishingStore((s) => s.lastCaughtFish);
+  const storeClear = useFishingStore((s) => s.clearCelebration);
 
-  const activeFish = celebratedFish || lastCaughtFish;
+  const celebrationTier = propTier ?? storeTier;
+  const activeFish = propFish ?? storeFish;
+  const clearCelebration = propOnClose ?? storeClear;
 
-  if (!celebrationTier || !activeFish) return null;
-
-  const style = TIER_COLORS[celebrationTier];
+  const validTier = (celebrationTier && celebrationTier >= 1 && celebrationTier <= 7 ? celebrationTier : 5) as FishTier;
+  const style = TIER_COLORS[validTier];
   const isTier7 = celebrationTier === 7;
   const isTier6 = celebrationTier === 6;
 
   // Lightweight particle count optimized for 60fps
   const particleCount = isTier7 ? 14 : isTier6 ? 8 : 6;
 
-  // Memoize particle coordinates so they NEVER recompute or jitter
+  // Memoize particle coordinates unconditionally at the top of the hook chain
   const particles = useMemo(() => {
     return Array.from({ length: particleCount }).map((_, i) => {
       const offsetX = (i / particleCount - 0.5) * 300 + Math.sin(i * 1.7) * 25;
@@ -38,6 +47,8 @@ export const CatchCelebration: React.FC = () => {
       };
     });
   }, [particleCount]);
+
+  if (!celebrationTier || !activeFish) return null;
 
   return (
     <motion.div
