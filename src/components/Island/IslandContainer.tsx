@@ -260,7 +260,6 @@ export const IslandContainer: React.FC = () => {
 
       const unsubMedia = window.electronAPI.onSystemMediaUpdate?.((act) => {
         addOrUpdateActivity(act as Activity);
-        setActiveSlot((prev) => (prev === 'fishing' ? 'activity' : prev));
       }) || (() => {});
 
       const unsubMediaIdle = window.electronAPI.onSystemMediaIdle?.(() => {

@@ -15,6 +15,12 @@ const BAIT_SHORT_NAMES: Record<string, string> = {
   bait_boss_awakening: 'Boss',
 };
 
+const WORLD_SHORT_NAMES: Record<number, string> = {
+  1: 'Ao Hồ',
+  2: 'Biển Độc',
+  3: 'Cổ Đại',
+};
+
 export const FishingScene: React.FC = () => {
   const isFishingActive = useFishingStore((s) => s.isFishingActive);
   const setFishingActive = useFishingStore((s) => s.setFishingActive);
@@ -65,21 +71,21 @@ export const FishingScene: React.FC = () => {
       </div>
 
       {/* Top Bar inside Fishing Scene */}
-      <div className="relative z-10 flex items-center justify-between gap-1.5">
-        <div className="flex items-center gap-1.5 min-w-0">
+      <div className="relative z-10 flex items-center justify-between gap-1">
+        <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
           <span className="text-[10px] font-semibold tracking-wide text-white/90 uppercase px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-1 shrink-0 whitespace-nowrap">
             <span
               className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                 isFishingActive ? 'bg-emerald-400 animate-pulse' : 'bg-white/40'
               }`}
             />
-            <span>{worldInfo.name}</span>
+            <span>W{currentWorld}: {WORLD_SHORT_NAMES[currentWorld] || worldInfo.name}</span>
           </span>
 
           {lastCatchBatch && lastCatchBatch.caughtItems.length > 1 && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-0.5 shrink-0 whitespace-nowrap">
               <Zap className="w-2.5 h-2.5" strokeWidth={1.5} />
-              +{lastCatchBatch.caughtItems.length} cá
+              +{lastCatchBatch.caughtItems.length}
             </span>
           )}
 
@@ -103,11 +109,11 @@ export const FishingScene: React.FC = () => {
         </div>
 
         {/* Fishing Toggle Button & Manual Reel */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 ml-1">
           <button
             type="button"
             onClick={() => catchRound()}
-            className="px-2 py-0.5 text-[10px] font-medium text-white/90 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-lg border border-white/15 cursor-pointer flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap"
+            className="px-2 py-0.5 text-[10px] font-semibold text-white/90 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-lg border border-white/15 cursor-pointer flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap"
             title="Bấm để câu 1 lần ngay lập tức"
           >
             <span>Kéo câu</span>
@@ -116,7 +122,7 @@ export const FishingScene: React.FC = () => {
           <button
             type="button"
             onClick={() => setFishingActive(!isFishingActive)}
-            className={`px-2.5 py-0.5 text-[10px] font-semibold transition-all rounded-lg border cursor-pointer flex items-center gap-1 shadow-md shrink-0 whitespace-nowrap ${
+            className={`px-2 py-0.5 text-[10px] font-semibold transition-all rounded-lg border cursor-pointer flex items-center gap-1 shadow-md shrink-0 whitespace-nowrap ${
               isFishingActive
                 ? 'bg-rose-500/25 border-rose-500/40 text-rose-200 hover:bg-rose-500/35'
                 : 'bg-emerald-500/30 border-emerald-400/50 text-emerald-200 hover:bg-emerald-500/40'
