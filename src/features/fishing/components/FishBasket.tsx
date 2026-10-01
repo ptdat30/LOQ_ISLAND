@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Coins, ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { FISH_MAP } from '../data/fishData';
-import { TIER_COLORS } from '../data/ratesData';
 import { getFishImageUrl } from '../data/fishImages';
 import { calculateFishPrice } from '../logic/economy';
+import { TierBadge } from './shared/TierBadge';
+import { TabularNumber } from './shared/TabularNumber';
+import { ActionButton } from './shared/ActionButton';
+import { TOKENS } from '../constants/tokens';
 import type { FishTier } from '../../../types/fishing';
 
 export const FishBasket: React.FC = () => {
@@ -46,83 +49,81 @@ export const FishBasket: React.FC = () => {
   };
 
   return (
-    <div className="w-full shrink-0 bg-white/[0.04] border border-white/10 rounded-2xl p-2.5 flex flex-col gap-2 select-none relative">
-      {/* Header Row: Capacity & Estimated Value */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center">
-            <ShoppingBag className="w-3.5 h-3.5 text-sky-400" strokeWidth={1.5} />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[12px] font-semibold text-white/95 leading-none">
-                Giỏ cá: {totalCount.toLocaleString()}/{maxCapacity}
-              </span>
-              {ownedAutoUpgrades.quantumBasket && (
-                <span className="text-[9px] font-bold text-purple-400 px-1 py-0.2 rounded bg-purple-500/15 border border-purple-500/30">
-                  Lượng tử
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] text-white/50 leading-none">
-              Ước tính:{' '}
-              <span className="text-amber-300 font-medium">
-                {estimatedGold.toLocaleString()} vàng
-              </span>
+    <div
+      className="w-full shrink-0 rounded-[16px] bg-[#14141A] border border-white/[0.06] p-3 flex flex-col justify-between select-none relative"
+      style={{
+        boxShadow: TOKENS.shadows.innerHighlight,
+      }}
+    >
+      {/* Header Row: Tension Layout (Left: Title + Count + Gold, Right: Sell Controls) */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        {/* Left: Summary Metrics */}
+        <div className="flex items-baseline gap-2 min-w-0">
+          <span className="text-[13px] font-semibold text-[#F5F5F7] tracking-tight">
+            Giỏ cá
+          </span>
+          <span className="text-[11px] text-[#8A8A94] tabular-nums font-normal">
+            {totalCount.toLocaleString()}/{maxCapacity}
+          </span>
+          {estimatedGold > 0 && (
+            <span className="text-[12px] font-medium text-[#FFD60A] tabular-nums">
+              ≈ <TabularNumber value={estimatedGold} /> vàng
             </span>
-          </div>
+          )}
         </div>
 
-        {/* Sell Buttons Group */}
-        <div className="flex items-center gap-1">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Quick Filter Menu Trigger */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] text-white/80 border border-white/10 cursor-pointer flex items-center gap-0.5"
-              title="Bán theo Cấp độ Tier"
+              className="h-7 px-2 rounded-[8px] bg-white/[0.06] hover:bg-white/[0.1] text-[11px] text-[#8A8A94] hover:text-[#F5F5F7] border border-white/[0.06] cursor-pointer flex items-center gap-1 transition-colors"
+              title="Bán theo nhóm Tier"
             >
               <span>Lọc bán</span>
-              <ChevronDown className="w-3 h-3 text-white/60" strokeWidth={1.5} />
+              <ChevronDown className="w-3 h-3 text-[#8A8A94]" strokeWidth={1.5} />
             </button>
 
             {/* Filter Dropdown */}
             <AnimatePresence>
               {isFilterOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                  className="absolute right-0 top-7 z-30 w-36 bg-black/95 border border-white/20 backdrop-blur-xl rounded-xl p-1 shadow-2xl space-y-0.5"
+                  exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute right-0 top-8 z-30 w-36 bg-[#14141A] border border-white/[0.08] rounded-[10px] p-1 shadow-2xl space-y-0.5"
+                  style={{ boxShadow: TOKENS.shadows.card }}
                 >
                   <button
                     type="button"
-                    onClick={() => handleSellTierRange(1, 1, 'Tier 1')}
-                    className="w-full text-left px-2 py-1 rounded text-[10px] text-white/80 hover:bg-white/15 cursor-pointer flex items-center justify-between"
+                    onClick={() => handleSellTierRange(1, 1, 'T1')}
+                    className="w-full text-left px-2 py-1 rounded-[6px] text-[11px] text-[#8A8A94] hover:text-[#F5F5F7] hover:bg-white/[0.08] cursor-pointer"
                   >
-                    <span>Bán chỉ Tier 1</span>
+                    Bán chỉ Tier 1
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSellTierRange(1, 2, 'Tier 1-2')}
-                    className="w-full text-left px-2 py-1 rounded text-[10px] text-white/80 hover:bg-white/15 cursor-pointer flex items-center justify-between"
+                    onClick={() => handleSellTierRange(1, 2, 'T1-2')}
+                    className="w-full text-left px-2 py-1 rounded-[6px] text-[11px] text-[#8A8A94] hover:text-[#F5F5F7] hover:bg-white/[0.08] cursor-pointer"
                   >
-                    <span>Bán Tier 1 & 2</span>
+                    Bán Tier 1 & 2
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSellTierRange(1, 3, 'Tier 1-3')}
-                    className="w-full text-left px-2 py-1 rounded text-[10px] text-white/80 hover:bg-white/15 cursor-pointer flex items-center justify-between"
+                    onClick={() => handleSellTierRange(1, 3, 'T1-3')}
+                    className="w-full text-left px-2 py-1 rounded-[6px] text-[11px] text-[#8A8A94] hover:text-[#F5F5F7] hover:bg-white/[0.08] cursor-pointer"
                   >
-                    <span>Bán Tier 1 đến 3</span>
+                    Bán Tier 1 đến 3
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSellTierRange(1, 4, 'Tier 1-4')}
-                    className="w-full text-left px-2 py-1 rounded text-[10px] text-white/80 hover:bg-white/15 cursor-pointer flex items-center justify-between"
+                    onClick={() => handleSellTierRange(1, 4, 'T1-4')}
+                    className="w-full text-left px-2 py-1 rounded-[6px] text-[11px] text-[#8A8A94] hover:text-[#F5F5F7] hover:bg-white/[0.08] cursor-pointer"
                   >
-                    <span>Bán Tier 1 đến 4</span>
+                    Bán Tier 1 đến 4
                   </button>
                 </motion.div>
               )}
@@ -130,19 +131,15 @@ export const FishBasket: React.FC = () => {
           </div>
 
           {/* Sell All Button */}
-          <button
-            type="button"
+          <ActionButton
+            variant="primary"
+            size="sm"
             onClick={handleSellAll}
             disabled={totalCount === 0}
-            className={`px-3 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
-              totalCount > 0
-                ? 'bg-amber-500/25 border-amber-400/40 text-amber-200 hover:bg-amber-500/35 active:scale-95 shadow-sm'
-                : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-            }`}
+            title={totalCount > 0 ? `Bán tất cả ${totalCount} cá thu về vàng` : 'Giỏ đang trống'}
           >
-            <Coins className="w-3 h-3 text-amber-300" strokeWidth={1.5} />
-            <span>Bán tất cả</span>
-          </button>
+            Bán tất cả
+          </ActionButton>
         </div>
       </div>
 
@@ -153,53 +150,69 @@ export const FishBasket: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="text-[10px] font-semibold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 rounded-lg px-2 py-0.5 flex items-center gap-1"
+            transition={{ duration: 0.15 }}
+            className="text-[11px] font-medium text-[#32D74B] bg-[#32D74B]/10 border border-[#32D74B]/20 rounded-[8px] px-2 py-1 mb-2 flex items-center gap-1.5"
           >
-            <Check className="w-3 h-3 text-emerald-400" strokeWidth={1.5} />
+            <Check className="w-3 h-3 text-[#32D74B]" strokeWidth={1.5} />
             <span>Đã bán: {lastSoldNotify}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Horizontal Scroll of Fish In Basket */}
+      {/* Horizontal Scroll of Recent / Basket Catches */}
       <div
-        className="w-full flex items-center gap-1.5 overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden py-0.5"
+        className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden py-0.5"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {basket.length === 0 ? (
-          <span className="text-[10px] text-white/40 italic py-1 px-1">
-            Giỏ cá đang trống. Hãy kéo câu hoặc bật treo máy!
-          </span>
+          <div className="w-full py-3 text-center text-[12px] text-[#8A8A94] italic">
+            Giỏ cá trống. Kéo câu hoặc bật treo máy để bắt đầu.
+          </div>
         ) : (
           basket.map((item) => {
             const fish = FISH_MAP[item.fishId];
             if (!fish) return null;
-            const style = TIER_COLORS[fish.tier];
             const unitPrice = calculateFishPrice(fish, currentWorld, currentRodId);
-
             const fishImg = getFishImageUrl(fish.id);
 
             return (
               <div
                 key={item.fishId}
                 onClick={() => inspectFish(fish.id)}
-                className={`shrink-0 px-2 py-1 rounded-xl border flex items-center gap-1.5 cursor-pointer hover:brightness-125 hover:scale-105 active:scale-95 transition-all ${style.bg} ${style.border}`}
-                title={`Bấm để mở thư viện & xem chi tiết loài ${fish.name}`}
+                className="shrink-0 w-[84px] h-[78px] rounded-[12px] bg-[#1A1A22] border border-white/[0.06] p-1.5 flex flex-col justify-between cursor-pointer hover:border-white/20 active:scale-[0.96] transition-all relative group"
+                style={{ boxShadow: TOKENS.shadows.innerHighlight }}
+                title={`${fish.name} - Bấm để xem chi tiết`}
               >
-                {fishImg && (
-                  <img src={fishImg} alt={fish.name} className="w-5 h-5 object-contain shrink-0 drop-shadow" />
-                )}
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-semibold text-white/90 truncate max-w-[90px] leading-tight">
-                    {fish.name}
-                  </span>
-                  <span className="text-[9px] text-white/50 leading-none">
-                    {unitPrice.toLocaleString()}v • T{fish.tier}
+                {/* Top: Tier Badge & Count */}
+                <div className="flex items-center justify-between w-full">
+                  <TierBadge tier={fish.tier} />
+                  <span className="text-[10px] font-semibold text-[#FFD60A] tabular-nums bg-black/40 px-1 py-0.2 rounded-[4px]">
+                    ×{item.count}
                   </span>
                 </div>
-                <span className="text-[11px] font-bold text-amber-300 bg-black/40 px-1.5 py-0.2 rounded-md">
-                  ×{item.count}
-                </span>
+
+                {/* Middle: Fish Thumbnail */}
+                <div className="flex items-center justify-center my-0.5">
+                  {fishImg ? (
+                    <img
+                      src={fishImg}
+                      alt={fish.name}
+                      className="w-7 h-7 object-contain group-hover:scale-105 transition-transform"
+                    />
+                  ) : (
+                    <span className="text-sm">🐟</span>
+                  )}
+                </div>
+
+                {/* Bottom: Name & Price */}
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[10px] font-medium text-[#F5F5F7] truncate">
+                    {fish.name}
+                  </span>
+                  <span className="text-[9px] text-[#8A8A94] tabular-nums">
+                    {unitPrice.toLocaleString()}v
+                  </span>
+                </div>
               </div>
             );
           })

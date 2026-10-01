@@ -103,14 +103,14 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
 
   if (isFishing) {
     if (activeSubTab === 'library' && isLibraryEnlarged) {
-      targetWidth = 630;
+      targetWidth = 640;
       targetHeight = 520;
     } else if (activeSubTab !== 'fishing') {
-      targetWidth = 420;
-      targetHeight = 400;
+      targetWidth = 440;
+      targetHeight = 420;
     } else {
       targetWidth = 420;
-      targetHeight = 340;
+      targetHeight = 360;
     }
   }
 
@@ -144,6 +144,21 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
     effectShadow = '0 0 40px rgba(168, 85, 247, 0.7), 0 0 80px rgba(56, 189, 248, 0.4)';
   }
 
+  const pillBackground = isShiftYellow && !isExpanded
+    ? 'rgba(30, 24, 8, 0.95)'
+    : isFishing && isExpanded
+    ? 'rgba(10, 10, 15, 0.94)'
+    : activeBg;
+
+  const pillShadow = isEggAlert || isShiftAlert
+    ? undefined
+    : effectShadow ||
+      (isFishing && isExpanded
+        ? '0 24px 48px -12px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
+        : isExpanded
+        ? '0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06)'
+        : islandColors.shadow);
+
   return (
     <motion.div
       ref={containerRef}
@@ -154,7 +169,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
         scale: 1,
         width: isExpanded ? targetWidth : compactWidth,
         height: isExpanded ? targetHeight : 37,
-        borderRadius: isExpanded ? 32 : 9999,
+        borderRadius: isExpanded ? (isFishing ? 20 : 32) : 9999,
       }}
       exit={{ opacity: 0, scale: 0.7 }}
       transition={pillSpring}
@@ -167,14 +182,11 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
         if (info.offset.y > 45 || info.velocity.y > 300) onToggleExpand();
       }}
       style={{
-        background: isShiftYellow && !isExpanded ? 'rgba(30, 24, 8, 0.95)' : activeBg,
+        background: pillBackground,
         border: isShiftYellow && !isExpanded ? '1px solid rgba(255, 214, 10, 0.35)' : undefined,
-        boxShadow: isEggAlert || isShiftAlert
-          ? undefined
-          : effectShadow ||
-            (isExpanded
-              ? '0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06)'
-              : islandColors.shadow),
+        boxShadow: pillShadow,
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         willChange: 'transform',
       }}
       className={`shrink-0 relative overflow-hidden select-none cursor-pointer ${glowClass}`}

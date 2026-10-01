@@ -8,6 +8,9 @@ import {
 import { useFishingStore } from '../stores/fishingStore';
 import { RODS, BAITS_INFO, AUTO_UPGRADES_CONFIG, VEHICLES } from '../data/shopData';
 import { ALL_FISH } from '../data/fishData';
+import { ActionButton } from './shared/ActionButton';
+import { TabularNumber } from './shared/TabularNumber';
+import { TOKENS } from '../constants/tokens';
 import type { BaitId, AutoUpgradeId, Rod } from '../../../types/fishing';
 
 type ShopTab = 'rods' | 'baits' | 'upgrades' | 'vehicles';
@@ -97,59 +100,31 @@ export const ShopSubView: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between select-none text-white overflow-hidden">
-      {/* Top Header & Resources */}
-      <div className="flex items-center justify-between px-1 pb-2 shrink-0">
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-white/10 p-0.5 rounded-xl border border-white/10">
-          <button
-            type="button"
-            onClick={() => setActiveTab('rods')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-              activeTab === 'rods' ? 'bg-sky-500/30 text-sky-200 shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Cần câu
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('baits')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-              activeTab === 'baits' ? 'bg-amber-500/30 text-amber-200 shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Mồi câu
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('upgrades')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-              activeTab === 'upgrades' ? 'bg-purple-500/30 text-purple-200 shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Tự động
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('vehicles')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
-              activeTab === 'vehicles' ? 'bg-emerald-500/30 text-emerald-200 shadow-sm' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Phương tiện
-          </button>
-        </div>
-
-        {/* Currency balances */}
-        <div className="flex items-center gap-2.5 text-[11px] font-bold">
-          <div className="flex items-center gap-1 text-amber-300">
-            <Coins className="w-3.5 h-3.5 text-amber-400" strokeWidth={1.5} />
-            <span>{gold.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sky-300">
-            <Gem className="w-3.5 h-3.5 text-sky-400" strokeWidth={1.5} />
-            <span>{diamonds.toLocaleString()}</span>
-          </div>
+    <div className="w-full h-full flex flex-col justify-between select-none text-[#F5F5F7] overflow-hidden">
+      {/* Top Tabs */}
+      <div className="flex items-center justify-between pb-2 shrink-0">
+        <div className="flex items-center gap-1 bg-[#14141A] p-0.5 rounded-[10px] border border-white/[0.06] w-full">
+          {(
+            [
+              { id: 'rods', label: 'Cần câu' },
+              { id: 'baits', label: 'Mồi câu' },
+              { id: 'upgrades', label: 'Tự động' },
+              { id: 'vehicles', label: 'Phương tiện' },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setActiveTab(t.id)}
+              className={`flex-1 py-1 rounded-[8px] text-[11px] font-medium transition-all cursor-pointer text-center ${
+                activeTab === t.id
+                  ? 'bg-white/[0.1] text-[#F5F5F7] shadow-sm'
+                  : 'text-[#8A8A94] hover:text-[#F5F5F7]'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -171,7 +146,7 @@ export const ShopSubView: React.FC = () => {
       <div className="flex-1 overflow-y-auto space-y-2 pr-1 no-scrollbar">
         {/* ─── TAB 1: CẦN CÂU ─── */}
         {activeTab === 'rods' && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {Object.values(RODS).map((rod) => {
               const isOwned = ownedRodIds.includes(rod.id);
               const isEquipped = currentRodId === rod.id;
@@ -181,51 +156,45 @@ export const ShopSubView: React.FC = () => {
               return (
                 <div
                   key={rod.id}
-                  className={`p-2 rounded-xl border transition-all flex items-center justify-between gap-2 ${
+                  className={`p-2.5 rounded-[12px] border transition-all flex items-center justify-between gap-3 ${
                     isEquipped
-                      ? 'bg-sky-500/15 border-sky-400/40'
-                      : isOwned
-                      ? 'bg-white/[0.04] border-white/10'
-                      : 'bg-white/[0.02] border-white/5'
+                      ? 'bg-[#14141A] border-[#5AC8FA]/40'
+                      : 'bg-[#14141A] border-white/[0.06]'
                   }`}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[12px] font-bold text-white truncate">{rod.name}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-medium text-[#F5F5F7] truncate">{rod.name}</span>
                       {isEquipped && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-sky-500/25 text-sky-300 border border-sky-400/30">
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#5AC8FA]/15 text-[#5AC8FA] border border-[#5AC8FA]/30">
                           Đang dùng
                         </span>
                       )}
                       {rod.unlocksWorld && !isOwned && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30">
                           Vào World {rod.unlocksWorld}
                         </span>
                       )}
                       {rodHint?.isCrucial && !isOwned && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-400/30">
-                          Cần thiết cho Thư viện
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30">
+                          Thư viện
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-white/60 line-clamp-1 mt-0.5">{rod.description}</p>
-                    {rodHint && (
-                      <p className="text-[9.5px] text-amber-300/90 font-medium mt-0.5">
-                        💡 {rodHint.hint}
-                      </p>
-                    )}
+                    <p className="text-[11px] text-[#8A8A94] line-clamp-1 mt-0.5">{rod.description}</p>
                     {!isOwned && (
-                      <div className="flex items-center gap-2 mt-1 text-[10px] font-semibold">
+                      <div className="flex items-center gap-2 mt-1 text-[11px] font-medium">
                         {rod.priceGold > 0 && (
-                          <span className="text-amber-300 flex items-center gap-0.5">
-                            <Coins className="w-3 h-3" strokeWidth={1.5} />
-                            {rod.priceGold.toLocaleString()}
+                          <span className="text-[#FFD60A] flex items-center gap-0.5 tabular-nums">
+                            <Coins className="w-3 h-3 text-[#FFD60A]" strokeWidth={1.5} />
+                            <TabularNumber value={rod.priceGold} />
                           </span>
                         )}
                         {rod.priceDiamond > 0 && (
-                          <span className="text-sky-300 flex items-center gap-0.5">
-                            <Gem className="w-3 h-3" strokeWidth={1.5} />
-                            {rod.priceDiamond.toLocaleString()}
+                          <span className="text-[#5AC8FA] flex items-center gap-0.5 tabular-nums">
+                            <Gem className="w-3 h-3 text-[#5AC8FA]" strokeWidth={1.5} />
+                            <TabularNumber value={rod.priceDiamond} />
                           </span>
                         )}
                       </div>
@@ -235,41 +204,33 @@ export const ShopSubView: React.FC = () => {
                   {/* Action button */}
                   <div className="shrink-0">
                     {isEquipped ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 cursor-default"
-                      >
-                        Đang chọn
-                      </button>
+                      <ActionButton variant="ghost" size="sm" disabled>
+                        Đang dùng
+                      </ActionButton>
                     ) : isOwned ? (
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="secondary"
+                        size="sm"
                         onClick={() => {
                           equipRod(rod.id);
                           showToast(`Đã trang bị: ${rod.name}`);
                         }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 cursor-pointer active:scale-95 transition-all"
                       >
                         Trang bị
-                      </button>
+                      </ActionButton>
                     ) : (
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
+                        disabled={!canAfford}
                         onClick={() => {
                           const res = buyRod(rod.id);
                           if (res) showToast(`Mua thành công: ${rod.name}`);
                           else showToast('Không đủ tài nguyên để mua!');
                         }}
-                        disabled={!canAfford}
-                        className={`px-3 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                          canAfford
-                            ? 'bg-amber-500/25 border-amber-400/40 text-amber-200 hover:bg-amber-500/35 active:scale-95'
-                            : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                        }`}
                       >
                         Mua
-                      </button>
+                      </ActionButton>
                     )}
                   </div>
                 </div>
@@ -280,7 +241,7 @@ export const ShopSubView: React.FC = () => {
 
         {/* ─── TAB 2: MỒI CÂU ─── */}
         {activeTab === 'baits' && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {Object.values(BAITS_INFO).map((bait) => {
               const isEquipped = currentBaitId === bait.id;
               const inventoryCount = baitInventory[bait.id] || 0;
@@ -292,66 +253,60 @@ export const ShopSubView: React.FC = () => {
               return (
                 <div
                   key={bait.id}
-                  className={`p-2 rounded-xl border transition-all flex flex-col gap-1.5 ${
-                    isEquipped ? 'bg-amber-500/10 border-amber-400/40' : 'bg-white/[0.03] border-white/10'
+                  className={`p-2.5 rounded-[12px] border transition-all flex flex-col gap-2 ${
+                    isEquipped
+                      ? 'bg-[#14141A] border-[#FF9F0A]/40'
+                      : 'bg-[#14141A] border-white/[0.06]'
                   }`}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[12px] font-bold text-white truncate">{bait.name}</span>
-                        <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 rounded-md">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[13px] font-medium text-[#F5F5F7] truncate">{bait.name}</span>
+                        <span className="text-[10px] font-medium text-[#FFD60A] bg-[#FFD60A]/10 border border-[#FFD60A]/20 px-1.5 py-0.2 rounded-[6px] tabular-nums">
                           Có: {inventoryCount.toLocaleString()}
                         </span>
                         {baitHint?.isCrucial && (
-                          <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-400/30">
-                            Cần thiết cho Thư viện
+                          <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30">
+                            Thư viện
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-white/60 line-clamp-1 mt-0.5">{bait.description}</p>
-                      {baitHint && (
-                        <p className="text-[9.5px] text-amber-300/90 font-medium mt-0.5">
-                          💡 {baitHint.hint}
-                        </p>
-                      )}
+                      <p className="text-[11px] text-[#8A8A94] line-clamp-1 mt-0.5">{bait.description}</p>
                     </div>
 
                     {/* Equip / Unequip */}
                     <div className="shrink-0 flex items-center gap-1">
                       {isEquipped ? (
-                        <button
-                          type="button"
+                        <ActionButton
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
                             equipBait(null);
                             showToast('Đã tháo mồi câu');
                           }}
-                          className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 cursor-pointer"
                         >
                           Tháo
-                        </button>
+                        </ActionButton>
                       ) : (
-                        <button
-                          type="button"
+                        <ActionButton
+                          variant="secondary"
+                          size="sm"
                           disabled={inventoryCount === 0}
                           onClick={() => {
                             equipBait(bait.id);
                             showToast(`Đã dùng: ${bait.name}`);
                           }}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                            inventoryCount > 0
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
-                              : 'bg-white/5 text-white/30 border-white/5 cursor-not-allowed'
-                          }`}
                         >
                           Dùng
-                        </button>
+                        </ActionButton>
                       )}
                     </div>
                   </div>
 
                   {/* Pack Selector & Buy Button */}
-                  <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                  <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.06]">
                     {/* Pack Radio Selector */}
                     <div className="flex items-center gap-1">
                       {bait.packs.map((p, idx) => (
@@ -361,10 +316,10 @@ export const ShopSubView: React.FC = () => {
                           onClick={() =>
                             setSelectedBaitPackIdx((prev) => ({ ...prev, [bait.id]: idx }))
                           }
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-semibold border transition-all cursor-pointer ${
+                          className={`px-1.5 py-0.5 rounded-[6px] text-[10px] font-medium border transition-all cursor-pointer ${
                             selectedPackIdx === idx
-                              ? 'bg-amber-400 text-black border-amber-400'
-                              : 'bg-white/10 text-white/70 border-white/10 hover:bg-white/15'
+                              ? 'bg-white/[0.15] text-[#F5F5F7] border-white/30'
+                              : 'bg-white/[0.04] text-[#8A8A94] border-white/[0.06] hover:bg-white/[0.08]'
                           }`}
                         >
                           {p.quantity.toLocaleString()} mồi
@@ -374,37 +329,33 @@ export const ShopSubView: React.FC = () => {
 
                     {/* Price and Buy Button */}
                     <div className="flex items-center gap-2">
-                      <div className="text-[10px] font-bold">
+                      <div className="text-[11px] font-medium flex items-center gap-1.5">
                         {pack.priceGold > 0 && (
-                          <span className="text-amber-300 flex items-center gap-0.5">
-                            <Coins className="w-3 h-3" strokeWidth={1.5} />
-                            {pack.priceGold.toLocaleString()}
+                          <span className="text-[#FFD60A] flex items-center gap-0.5 tabular-nums">
+                            <Coins className="w-3 h-3 text-[#FFD60A]" strokeWidth={1.5} />
+                            <TabularNumber value={pack.priceGold} />
                           </span>
                         )}
                         {pack.priceDiamond > 0 && (
-                          <span className="text-sky-300 flex items-center gap-0.5">
-                            <Gem className="w-3 h-3" strokeWidth={1.5} />
-                            {pack.priceDiamond.toLocaleString()}
+                          <span className="text-[#5AC8FA] flex items-center gap-0.5 tabular-nums">
+                            <Gem className="w-3 h-3 text-[#5AC8FA]" strokeWidth={1.5} />
+                            <TabularNumber value={pack.priceDiamond} />
                           </span>
                         )}
                       </div>
 
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
                         disabled={!canAfford}
                         onClick={() => {
                           const res = buyBaitPack(bait.id, selectedPackIdx);
                           if (res) showToast(`Đã mua ${pack.quantity.toLocaleString()} ${bait.name}`);
                           else showToast('Không đủ tài nguyên để mua!');
                         }}
-                        className={`px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                          canAfford
-                            ? 'bg-amber-500/25 border-amber-400/40 text-amber-200 hover:bg-amber-500/35 active:scale-95'
-                            : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                        }`}
                       >
                         Mua
-                      </button>
+                      </ActionButton>
                     </div>
                   </div>
                 </div>
@@ -415,7 +366,7 @@ export const ShopSubView: React.FC = () => {
 
         {/* ─── TAB 3: NÂNG CẤP TỰ ĐỘNG ─── */}
         {activeTab === 'upgrades' && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {Object.entries(AUTO_UPGRADES_CONFIG).map(([id, config]) => {
               const upgradeId = id as AutoUpgradeId;
               let isMaxed = false;
@@ -452,38 +403,41 @@ export const ShopSubView: React.FC = () => {
               return (
                 <div
                   key={upgradeId}
-                  className={`p-2 rounded-xl border transition-all flex items-center justify-between gap-2 ${
-                    isMaxed ? 'bg-purple-500/15 border-purple-400/40' : 'bg-white/[0.03] border-white/10'
+                  className={`p-2.5 rounded-[12px] border transition-all flex items-center justify-between gap-3 ${
+                    isMaxed
+                      ? 'bg-[#14141A] border-[#BF5AF2]/40'
+                      : 'bg-[#14141A] border-white/[0.06]'
                   }`}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[12px] font-bold text-white truncate">{config.name}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-medium text-[#F5F5F7] truncate">{config.name}</span>
                       {isMaxed && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-purple-500/25 text-purple-300 border border-purple-400/30 flex items-center gap-0.5">
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#BF5AF2]/15 text-[#BF5AF2] border border-[#BF5AF2]/30 flex items-center gap-0.5">
                           <Check className="w-2.5 h-2.5" strokeWidth={1.5} />
-                          {upgradeId === 'upgrade_drone' ? `Cấp ${currentLvl} (Max)` : 'Đã sở hữu'}
+                          {upgradeId === 'upgrade_drone' ? `Cấp ${currentLvl} (Max)` : 'Đã có'}
                         </span>
                       )}
                       {!isMaxed && upgradeId === 'upgrade_drone' && currentLvl > 0 && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#FF9F0A]/15 text-[#FF9F0A] border border-[#FF9F0A]/30">
                           Cấp {currentLvl}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-white/60 line-clamp-1 mt-0.5">{config.description}</p>
+                    <p className="text-[11px] text-[#8A8A94] line-clamp-1 mt-0.5">{config.description}</p>
                     {!isMaxed && (
-                      <div className="flex items-center gap-2 mt-1 text-[10px] font-semibold">
+                      <div className="flex items-center gap-2 mt-1 text-[11px] font-medium">
                         {nextPriceGold > 0 && (
-                          <span className="text-amber-300 flex items-center gap-0.5">
-                            <Coins className="w-3 h-3" strokeWidth={1.5} />
-                            {nextPriceGold.toLocaleString()}
+                          <span className="text-[#FFD60A] flex items-center gap-0.5 tabular-nums">
+                            <Coins className="w-3 h-3 text-[#FFD60A]" strokeWidth={1.5} />
+                            <TabularNumber value={nextPriceGold} />
                           </span>
                         )}
                         {nextPriceDiamond > 0 && (
-                          <span className="text-sky-300 flex items-center gap-0.5">
-                            <Gem className="w-3 h-3" strokeWidth={1.5} />
-                            {nextPriceDiamond.toLocaleString()}
+                          <span className="text-[#5AC8FA] flex items-center gap-0.5 tabular-nums">
+                            <Gem className="w-3 h-3 text-[#5AC8FA]" strokeWidth={1.5} />
+                            <TabularNumber value={nextPriceDiamond} />
                           </span>
                         )}
                       </div>
@@ -492,30 +446,22 @@ export const ShopSubView: React.FC = () => {
 
                   <div className="shrink-0">
                     {isMaxed ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 cursor-default"
-                      >
+                      <ActionButton variant="ghost" size="sm" disabled>
                         Tối đa
-                      </button>
+                      </ActionButton>
                     ) : (
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
                         disabled={!canAfford}
                         onClick={() => {
                           const res = buyAutoUpgrade(upgradeId);
                           if (res) showToast(`Nâng cấp thành công: ${config.name}`);
                           else showToast('Không đủ tài nguyên!');
                         }}
-                        className={`px-3 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                          canAfford
-                            ? 'bg-purple-500/25 border-purple-400/40 text-purple-200 hover:bg-purple-500/35 active:scale-95'
-                            : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                        }`}
                       >
                         {actionLabel}
-                      </button>
+                      </ActionButton>
                     )}
                   </div>
                 </div>
@@ -526,7 +472,7 @@ export const ShopSubView: React.FC = () => {
 
         {/* ─── TAB 4: PHƯƠNG TIỆN ─── */}
         {activeTab === 'vehicles' && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {Object.values(VEHICLES).map((vehicle) => {
               const isOwned = ownedVehicleIds.includes(vehicle.id);
               const isEquipped = currentVehicleId === vehicle.id;
@@ -535,36 +481,35 @@ export const ShopSubView: React.FC = () => {
               return (
                 <div
                   key={vehicle.id}
-                  className={`p-2 rounded-xl border transition-all flex items-center justify-between gap-2 ${
+                  className={`p-2.5 rounded-[12px] border transition-all flex items-center justify-between gap-3 ${
                     isEquipped
-                      ? 'bg-emerald-500/15 border-emerald-400/40'
-                      : isOwned
-                      ? 'bg-white/[0.04] border-white/10'
-                      : 'bg-white/[0.02] border-white/5'
+                      ? 'bg-[#14141A] border-[#32D74B]/40'
+                      : 'bg-[#14141A] border-white/[0.06]'
                   }`}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[12px] font-bold text-white truncate">{vehicle.name}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-medium text-[#F5F5F7] truncate">{vehicle.name}</span>
                       {isEquipped && (
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 border border-emerald-400/30">
+                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-[6px] bg-[#32D74B]/15 text-[#32D74B] border border-[#32D74B]/30">
                           Đang dùng
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-white/60 line-clamp-1 mt-0.5">{vehicle.description}</p>
+                    <p className="text-[11px] text-[#8A8A94] line-clamp-1 mt-0.5">{vehicle.description}</p>
                     {!isOwned && (
-                      <div className="flex items-center gap-2 mt-1 text-[10px] font-semibold">
+                      <div className="flex items-center gap-2 mt-1 text-[11px] font-medium">
                         {vehicle.priceGold > 0 && (
-                          <span className="text-amber-300 flex items-center gap-0.5">
-                            <Coins className="w-3 h-3" strokeWidth={1.5} />
-                            {vehicle.priceGold.toLocaleString()}
+                          <span className="text-[#FFD60A] flex items-center gap-0.5 tabular-nums">
+                            <Coins className="w-3 h-3 text-[#FFD60A]" strokeWidth={1.5} />
+                            <TabularNumber value={vehicle.priceGold} />
                           </span>
                         )}
                         {vehicle.priceDiamond > 0 && (
-                          <span className="text-sky-300 flex items-center gap-0.5">
-                            <Gem className="w-3 h-3" strokeWidth={1.5} />
-                            {vehicle.priceDiamond.toLocaleString()}
+                          <span className="text-[#5AC8FA] flex items-center gap-0.5 tabular-nums">
+                            <Gem className="w-3 h-3 text-[#5AC8FA]" strokeWidth={1.5} />
+                            <TabularNumber value={vehicle.priceDiamond} />
                           </span>
                         )}
                       </div>
@@ -573,41 +518,33 @@ export const ShopSubView: React.FC = () => {
 
                   <div className="shrink-0">
                     {isEquipped ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default"
-                      >
-                        Đang chọn
-                      </button>
+                      <ActionButton variant="ghost" size="sm" disabled>
+                        Đang dùng
+                      </ActionButton>
                     ) : isOwned ? (
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="secondary"
+                        size="sm"
                         onClick={() => {
                           equipVehicle(vehicle.id);
-                          showToast(`Đã chọn: ${vehicle.name}`);
+                          showToast(`Đã dùng: ${vehicle.name}`);
                         }}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 cursor-pointer active:scale-95 transition-all"
                       >
-                        Sử dụng
-                      </button>
+                        Trang bị
+                      </ActionButton>
                     ) : (
-                      <button
-                        type="button"
+                      <ActionButton
+                        variant="primary"
+                        size="sm"
                         disabled={!canAfford}
                         onClick={() => {
                           const res = buyVehicle(vehicle.id);
                           if (res) showToast(`Mua thành công: ${vehicle.name}`);
                           else showToast('Không đủ tài nguyên!');
                         }}
-                        className={`px-3 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
-                          canAfford
-                            ? 'bg-emerald-500/25 border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/35 active:scale-95'
-                            : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                        }`}
                       >
                         Mua
-                      </button>
+                      </ActionButton>
                     )}
                   </div>
                 </div>

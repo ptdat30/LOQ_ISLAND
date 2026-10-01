@@ -4,6 +4,9 @@ import { Dna, Sparkles, Check, ChevronRight, Lock, BookOpen } from 'lucide-react
 import { useFishingStore } from '../stores/fishingStore';
 import { RODS } from '../data/shopData';
 import { CORE_HOOK_LEVELS } from '../data/ratesData';
+import { ActionButton } from './shared/ActionButton';
+import { TabularNumber } from './shared/TabularNumber';
+import { TOKENS } from '../constants/tokens';
 import type { RodId } from '../../../types/fishing';
 
 export const SkillTreeSubView: React.FC = () => {
@@ -50,42 +53,43 @@ export const SkillTreeSubView: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between select-none text-white overflow-hidden">
-      {/* Header & Mutation Points */}
-      <div className="flex items-center justify-between pb-1.5 shrink-0 border-b border-white/10">
+    <div className="w-full h-full flex flex-col justify-between select-none text-[#F5F5F7] overflow-hidden">
+      {/* Header & Tabs */}
+      <div className="flex items-center justify-between pb-2 shrink-0 border-b border-white/[0.06]">
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-white/5 p-0.5 rounded-lg border border-white/10 text-[10px]">
+        <div className="flex items-center gap-1 bg-[#14141A] p-0.5 rounded-[10px] border border-white/[0.06] text-[11px]">
           <button
             type="button"
             onClick={() => setActiveTab('hook')}
-            className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+            className={`px-2.5 py-1 rounded-[8px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'hook'
-                ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                : 'text-white/60 hover:text-white'
+                ? 'bg-white/[0.1] text-[#F5F5F7] shadow-sm'
+                : 'text-[#8A8A94] hover:text-[#F5F5F7]'
             }`}
           >
-            <Sparkles className="w-3 h-3 text-purple-400" />
+            <Sparkles className="w-3.5 h-3.5 text-[#BF5AF2]" strokeWidth={1.5} />
             <span>Lưỡi Câu Cốt Lõi</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('collector')}
-            className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+            className={`px-2.5 py-1 rounded-[8px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'collector'
-                ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                : 'text-white/60 hover:text-white'
+                ? 'bg-white/[0.1] text-[#F5F5F7] shadow-sm'
+                : 'text-[#8A8A94] hover:text-[#F5F5F7]'
             }`}
           >
-            <BookOpen className="w-3 h-3 text-sky-400" />
+            <BookOpen className="w-3.5 h-3.5 text-[#5AC8FA]" strokeWidth={1.5} />
             <span>Sưu Tầm Gia</span>
-            {!hasUnlockedTier5Ever && <Lock className="w-2.5 h-2.5 text-white/40" />}
+            {!hasUnlockedTier5Ever && <Lock className="w-3 h-3 text-[#6E6E78]" strokeWidth={1.5} />}
           </button>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 border border-purple-400/30 text-purple-200 text-[11px] font-bold">
-          <Dna className="w-3.5 h-3.5 text-purple-400" strokeWidth={1.5} />
-          <span>{mutationPoints.toLocaleString()} MP</span>
+        {/* Mutation Points Balance */}
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[8px] bg-[#14141A] border border-[#BF5AF2]/30 text-[#BF5AF2] text-[11px] font-medium tabular-nums">
+          <Dna className="w-3.5 h-3.5 text-[#BF5AF2]" strokeWidth={1.5} />
+          <span><TabularNumber value={mutationPoints} /> MP</span>
         </div>
       </div>
 
@@ -96,7 +100,7 @@ export const SkillTreeSubView: React.FC = () => {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="my-0.5 text-center py-0.5 px-2 bg-purple-500/25 border border-purple-400/40 text-purple-200 text-[10px] font-medium rounded-lg"
+            className="my-1 text-center py-1 px-2.5 bg-[#BF5AF2]/15 border border-[#BF5AF2]/30 text-[#BF5AF2] text-[11px] font-medium rounded-[8px]"
           >
             {notifyMsg}
           </motion.div>
@@ -118,14 +122,15 @@ export const SkillTreeSubView: React.FC = () => {
                   key={id}
                   type="button"
                   onClick={() => setSelectedRodId(id)}
-                  className={`shrink-0 px-2 py-1 rounded-xl text-[10px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`shrink-0 px-2.5 py-1 rounded-[10px] text-[11px] font-medium border transition-all cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-purple-500/30 border-purple-400 text-purple-100 shadow-md'
-                      : 'bg-white/[0.04] border-white/10 text-white/60 hover:text-white'
+                      ? 'bg-[#14141A] border-[#BF5AF2] text-[#F5F5F7] shadow-sm'
+                      : 'bg-[#14141A]/60 border-white/[0.06] text-[#8A8A94] hover:text-[#F5F5F7]'
                   }`}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
                   <span>{rod.name.split(' ')[1] || rod.name}</span>
-                  <span className="text-[9px] px-1 rounded bg-black/40 text-purple-300">
+                  <span className="text-[10px] px-1 py-0.2 rounded-[4px] bg-black/40 text-[#BF5AF2] tabular-nums font-semibold">
                     Lvl {lvl}
                   </span>
                 </button>
@@ -133,8 +138,11 @@ export const SkillTreeSubView: React.FC = () => {
             })}
           </div>
 
-          {/* Level Progression Tree Visualizer */}
-          <div className="flex items-center justify-between px-2 py-1 bg-white/[0.03] border border-white/10 rounded-xl my-1 shrink-0">
+          {/* Linear Progress Bar (5 Segmented Dots / Levels) */}
+          <div
+            className="flex items-center justify-between px-3 py-2 bg-[#14141A] border border-white/[0.06] rounded-[12px] my-1 shrink-0"
+            style={{ boxShadow: TOKENS.shadows.innerHighlight }}
+          >
             {CORE_HOOK_LEVELS.map((node, idx) => {
               const isAchieved = currentLevel >= node.level;
               const isCurrent = currentLevel === node.level;
@@ -143,27 +151,27 @@ export const SkillTreeSubView: React.FC = () => {
                 <React.Fragment key={node.level}>
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold border transition-all ${
                         isCurrent
-                          ? 'bg-purple-500 text-white border-purple-300 ring-2 ring-purple-400/40 shadow-lg'
+                          ? 'bg-[#BF5AF2] text-[#0A0A0F] border-[#BF5AF2] shadow-sm'
                           : isAchieved
-                          ? 'bg-purple-500/30 text-purple-200 border-purple-400/50'
-                          : 'bg-white/5 text-white/30 border-white/10'
+                          ? 'bg-[#BF5AF2]/20 text-[#BF5AF2] border-[#BF5AF2]/50'
+                          : 'bg-white/[0.04] text-[#8A8A94] border-white/[0.08]'
                       }`}
                     >
                       {isAchieved && node.level > 0 ? (
-                        <Check className="w-3 h-3 text-purple-200" strokeWidth={1.5} />
+                        <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
                       ) : (
                         node.level
                       )}
                     </div>
-                    <span className="text-[8px] text-white/50 mt-0.5">Cấp {node.level}</span>
+                    <span className="text-[9px] text-[#8A8A94] mt-0.5">Cấp {node.level}</span>
                   </div>
 
                   {idx < CORE_HOOK_LEVELS.length - 1 && (
                     <div
-                      className={`flex-1 h-0.5 mx-1 rounded transition-colors ${
-                        currentLevel > node.level ? 'bg-purple-500' : 'bg-white/10'
+                      className={`flex-1 h-[2px] mx-1.5 rounded-full transition-colors ${
+                        currentLevel > node.level ? 'bg-[#BF5AF2]' : 'bg-white/[0.08]'
                       }`}
                     />
                   )}
@@ -173,43 +181,46 @@ export const SkillTreeSubView: React.FC = () => {
           </div>
 
           {/* Current Level Stats Card */}
-          <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-2.5 flex flex-col justify-between flex-1 my-1">
+          <div
+            className="bg-[#14141A] border border-white/[0.06] rounded-[16px] p-3 flex flex-col justify-between flex-1 my-1"
+            style={{ boxShadow: TOKENS.shadows.innerHighlight }}
+          >
             <div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-[12px] font-bold text-white/95">
+                  <h4 className="text-[13px] font-medium text-[#F5F5F7]">
                     Lưỡi Câu Cốt Lõi (Cấp {currentLevel})
                   </h4>
-                  <p className="text-[10px] text-white/60 leading-tight mt-0.5">
-                    {currentLevel === 0 ? 'Chưa cường hóa' : 'Cường hóa tỉ lệ câu cá hiếm Tier 5-7'}
+                  <p className="text-[11px] text-[#8A8A94] mt-0.5">
+                    {currentLevel === 0 ? 'Chưa cường hóa' : 'Tăng tỉ lệ xuất hiện cá hiếm Tier 5 đến 7'}
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[9px] text-white/40 block">Tỉ lệ Tier 5-7</span>
-                  <span className="text-[11px] font-extrabold text-amber-300">
+                  <span className="text-[10px] text-[#8A8A94] block">Tổng tỉ lệ cộng</span>
+                  <span className="text-[13px] font-semibold text-[#FFD60A] tabular-nums">
                     +{currentConfig.tier5Bonus + currentConfig.tier6Bonus + currentConfig.tier7Bonus}%
                   </span>
                 </div>
               </div>
 
               {/* Bonus Badges Grid */}
-              <div className="grid grid-cols-3 gap-1.5 mt-1">
-                <div className="p-1 rounded-lg bg-white/5 border border-white/10 text-center">
-                  <span className="text-[9px] text-white/50 block">Tier 5</span>
-                  <span className="text-[11px] font-bold text-amber-300">
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                <div className="p-2 rounded-[10px] bg-white/[0.03] border border-white/[0.06] text-center">
+                  <span className="text-[10px] text-[#8A8A94] block">Tier 5</span>
+                  <span className="text-[12px] font-semibold text-[#FF9F0A] tabular-nums">
                     +{currentConfig.tier5Bonus}%
                   </span>
                 </div>
-                <div className="p-1 rounded-lg bg-white/5 border border-white/10 text-center">
-                  <span className="text-[9px] text-white/50 block">Tier 6</span>
-                  <span className="text-[11px] font-bold text-rose-300">
+                <div className="p-2 rounded-[10px] bg-white/[0.03] border border-white/[0.06] text-center">
+                  <span className="text-[10px] text-[#8A8A94] block">Tier 6</span>
+                  <span className="text-[12px] font-semibold text-[#FF453A] tabular-nums">
                     +{currentConfig.tier6Bonus}%
                   </span>
                 </div>
-                <div className="p-1 rounded-lg bg-white/5 border border-white/10 text-center">
-                  <span className="text-[9px] text-white/50 block">Tier 7</span>
-                  <span className="text-[11px] font-bold text-yellow-300">
+                <div className="p-2 rounded-[10px] bg-white/[0.03] border border-white/[0.06] text-center">
+                  <span className="text-[10px] text-[#8A8A94] block">Tier 7</span>
+                  <span className="text-[12px] font-semibold text-[#FFD60A] tabular-nums">
                     +{currentConfig.tier7Bonus}%
                   </span>
                 </div>
@@ -218,12 +229,12 @@ export const SkillTreeSubView: React.FC = () => {
 
             {/* Next Level Preview */}
             {!isMaxLevel && nextConfig && (
-              <div className="pt-1 border-t border-white/5">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-white/40 uppercase font-bold tracking-wider">
-                    Cấp tiếp theo (Cấp {nextConfig.level})
+              <div className="pt-2 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#8A8A94]">
+                    Cấp tiếp theo ({nextConfig.level}):
                   </span>
-                  <span className="text-purple-300 font-semibold">
+                  <span className="text-[#BF5AF2] font-medium tabular-nums">
                     +{nextConfig.tier5Bonus}% T5 • +{nextConfig.tier6Bonus}% T6 • +{nextConfig.tier7Bonus}% T7
                   </span>
                 </div>
@@ -231,32 +242,28 @@ export const SkillTreeSubView: React.FC = () => {
             )}
           </div>
 
-          {/* Upgrade Button */}
-          <div className="pt-2 border-t border-white/10 flex items-center justify-between shrink-0">
+          {/* Upgrade Button Row */}
+          <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between shrink-0">
             {!isMaxLevel && nextConfig ? (
               <>
-                <div className="flex items-center gap-1 text-[11px] font-semibold text-purple-300">
-                  <Dna className="w-3.5 h-3.5 text-purple-400" strokeWidth={1.5} />
-                  <span>Chi phí: {nextConfig.costPoints.toLocaleString()} MP</span>
+                <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#BF5AF2]">
+                  <Dna className="w-3.5 h-3.5 text-[#BF5AF2]" strokeWidth={1.5} />
+                  <span>Chi phí: <TabularNumber value={nextConfig.costPoints} /> MP</span>
                 </div>
 
-                <button
-                  type="button"
+                <ActionButton
+                  variant="primary"
+                  size="md"
                   onClick={handleUpgrade}
                   disabled={mutationPoints < nextConfig.costPoints}
-                  className={`px-4 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1 shadow-md ${
-                    mutationPoints >= nextConfig.costPoints
-                      ? 'bg-purple-500/30 border-purple-400 text-purple-100 hover:bg-purple-500/40 active:scale-95'
-                      : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                  }`}
                 >
                   <span>Nâng cấp</span>
-                  <ChevronRight className="w-3 h-3 text-purple-300" strokeWidth={1.5} />
-                </button>
+                  <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} />
+                </ActionButton>
               </>
             ) : (
-              <div className="w-full text-center py-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-xl">
-                ✨ Đã đạt cấp tối đa (Cấp 5: +25% T5, +15% T6, +5% T7)
+              <div className="w-full text-center py-1.5 text-[12px] font-medium text-[#32D74B] bg-[#32D74B]/10 border border-[#32D74B]/20 rounded-[10px]">
+                Đã đạt cấp tối đa (+25% T5, +15% T6, +5% T7)
               </div>
             )}
           </div>
@@ -265,58 +272,64 @@ export const SkillTreeSubView: React.FC = () => {
         /* Tab 2: Sưu Tầm Gia */
         <div className="flex-1 flex flex-col justify-between py-2 min-h-0">
           {!hasUnlockedTier5Ever ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-4 text-center bg-white/[0.03] border border-white/10 rounded-2xl">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2">
-                <Lock className="w-6 h-6 text-white/40" />
+            <div
+              className="flex-1 flex flex-col items-center justify-center p-4 text-center bg-[#14141A] border border-white/[0.06] rounded-[16px]"
+              style={{ boxShadow: TOKENS.shadows.innerHighlight }}
+            >
+              <div className="w-10 h-10 rounded-[12px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-2">
+                <Lock className="w-5 h-5 text-[#6E6E78]" strokeWidth={1.5} />
               </div>
-              <h4 className="text-[13px] font-bold text-white/80">
+              <h4 className="text-[13px] font-medium text-[#F5F5F7]">
                 Kỹ Năng "Sưu Tầm Gia" Đang Bị Khóa
               </h4>
-              <p className="text-[11px] text-white/50 max-w-[300px] mt-1.5 leading-relaxed">
-                Hãy bắt được ít nhất một loài cá <strong className="text-amber-300">Tier 5+</strong> (Cá Thần Thoại / Thủy Quái) để mở khóa kỹ năng đặc biệt này.
+              <p className="text-[11px] text-[#8A8A94] max-w-[280px] mt-1 leading-relaxed">
+                Hãy bắt ít nhất một loài cá Tier 5+ (Thần Thoại hoặc Boss) để mở khóa kỹ năng này.
               </p>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col justify-between bg-white/[0.04] border border-purple-500/30 rounded-2xl p-3">
+            <div
+              className="flex-1 flex flex-col justify-between bg-[#14141A] border border-white/[0.06] rounded-[16px] p-3"
+              style={{ boxShadow: TOKENS.shadows.innerHighlight }}
+            >
               <div>
-                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center">
-                      <BookOpen className="w-4 h-4 text-sky-400" />
+                    <div className="w-8 h-8 rounded-[10px] bg-[#5AC8FA]/15 border border-[#5AC8FA]/30 flex items-center justify-center">
+                      <BookOpen className="w-4 h-4 text-[#5AC8FA]" strokeWidth={1.5} />
                     </div>
                     <div>
-                      <h4 className="text-[13px] font-bold text-white">Sưu Tầm Gia</h4>
-                      <span className="text-[10px] text-purple-300 font-semibold">
+                      <h4 className="text-[13px] font-medium text-[#F5F5F7]">Sưu Tầm Gia</h4>
+                      <span className="text-[11px] text-[#8A8A94]">
                         Cấp độ: {collectorSkillLevel}/5
                       </span>
                     </div>
                   </div>
 
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-[6px] bg-[#32D74B]/10 border border-[#32D74B]/20 text-[#32D74B] tabular-nums">
                     +{collectorSkillLevel * 5}% Tỉ Lệ Cá Mới
                   </span>
                 </div>
 
-                <p className="text-[11px] text-white/70 mt-2.5 leading-relaxed">
-                  Tăng xác suất xuất hiện các loài cá <strong className="text-sky-300">chưa từng câu được</strong> trong Thư Viện. Giúp bạn hoàn thiện bộ sưu tập 84/84 nhanh hơn!
+                <p className="text-[11px] text-[#8A8A94] mt-2 leading-relaxed">
+                  Tăng xác suất xuất hiện các loài cá chưa từng câu được trong Thư Viện. Giúp bạn hoàn thiện bộ sưu tập 84 loài nhanh hơn.
                 </p>
 
                 {/* Level Nodes */}
-                <div className="flex items-center justify-between px-2 py-2 bg-black/30 border border-white/10 rounded-xl my-3">
+                <div className="flex items-center justify-between px-3 py-2 bg-black/30 border border-white/[0.06] rounded-[12px] my-3">
                   {[1, 2, 3, 4, 5].map((lvl) => {
                     const isReached = collectorSkillLevel >= lvl;
                     return (
                       <div key={lvl} className="flex flex-col items-center">
                         <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold border transition-all ${
                             isReached
-                              ? 'bg-purple-500 text-white border-purple-300 shadow-md'
-                              : 'bg-white/5 text-white/30 border-white/10'
+                              ? 'bg-[#5AC8FA] text-[#0A0A0F] border-[#5AC8FA]'
+                              : 'bg-white/[0.04] text-[#8A8A94] border-white/[0.06]'
                           }`}
                         >
-                          {isReached ? <Check className="w-3.5 h-3.5 text-white" /> : lvl}
+                          {isReached ? <Check className="w-3.5 h-3.5" strokeWidth={1.5} /> : lvl}
                         </div>
-                        <span className="text-[8px] text-white/50 mt-1">+{lvl * 5}%</span>
+                        <span className="text-[9px] text-[#8A8A94] mt-1">+{lvl * 5}%</span>
                       </div>
                     );
                   })}
@@ -324,31 +337,27 @@ export const SkillTreeSubView: React.FC = () => {
               </div>
 
               {/* Collector Upgrade Button */}
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
                 {collectorSkillLevel < 5 ? (
                   <>
-                    <div className="flex items-center gap-1 text-[11px] font-semibold text-purple-300">
-                      <Dna className="w-3.5 h-3.5 text-purple-400" strokeWidth={1.5} />
-                      <span>Chi phí: {nextCollectorCost} MP</span>
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-[#BF5AF2]">
+                      <Dna className="w-3.5 h-3.5 text-[#BF5AF2]" strokeWidth={1.5} />
+                      <span>Chi phí: <TabularNumber value={nextCollectorCost} /> MP</span>
                     </div>
 
-                    <button
-                      type="button"
+                    <ActionButton
+                      variant="primary"
+                      size="md"
                       onClick={handleUpgradeCollector}
                       disabled={mutationPoints < nextCollectorCost}
-                      className={`px-4 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex items-center gap-1 shadow-md ${
-                        mutationPoints >= nextCollectorCost
-                          ? 'bg-purple-500/30 border-purple-400 text-purple-100 hover:bg-purple-500/40 active:scale-95'
-                          : 'bg-white/5 border-white/10 text-white/30 cursor-not-allowed'
-                      }`}
                     >
                       <span>Nâng cấp (+5%)</span>
-                      <ChevronRight className="w-3 h-3 text-purple-300" strokeWidth={1.5} />
-                    </button>
+                      <ChevronRight className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    </ActionButton>
                   </>
                 ) : (
-                  <div className="w-full text-center py-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-xl">
-                    ✨ Đã đạt cấp tối đa (+25% tỉ lệ cá mới chưa có)
+                  <div className="w-full text-center py-1 text-[11px] font-medium text-[#32D74B] bg-[#32D74B]/10 border border-[#32D74B]/20 rounded-[10px]">
+                    Đã đạt cấp tối đa (+25% tỉ lệ cá mới)
                   </div>
                 )}
               </div>

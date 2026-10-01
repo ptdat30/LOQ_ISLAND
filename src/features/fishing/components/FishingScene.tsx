@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Fish as FishIcon, Zap, AlertTriangle, Sparkles } from 'lucide-react';
+import { Play, Pause, Zap, AlertTriangle, Sparkles } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
-import { TIER_COLORS } from '../data/ratesData';
 import { WORLDS_INFO } from '../data/fishData';
 import { BAITS_INFO } from '../data/shopData';
 import { getFishImageUrl } from '../data/fishImages';
+import { TierBadge } from './shared/TierBadge';
+import { TabularNumber } from './shared/TabularNumber';
+import { ActionButton } from './shared/ActionButton';
+import { TOKENS } from '../constants/tokens';
 
 const BAIT_SHORT_NAMES: Record<string, string> = {
   bait_earthworm: 'Giun',
@@ -19,6 +22,13 @@ const WORLD_SHORT_NAMES: Record<number, string> = {
   1: 'Ao Hồ',
   2: 'Biển Độc',
   3: 'Cổ Đại',
+};
+
+// Deep, restrained water surfaces (no loud neons)
+const WATER_BACKGROUNDS: Record<number, string> = {
+  1: 'linear-gradient(180deg, #0A1420 0%, #0E1D2D 100%)', // Calm Deep Abyss
+  2: 'linear-gradient(180deg, #0A1A14 0%, #0F251E 100%)', // Toxic Depth
+  3: 'linear-gradient(180deg, #1C1510 0%, #261D16 100%)', // Sepia Prehistoric
 };
 
 export const FishingScene: React.FC = () => {
@@ -36,54 +46,46 @@ export const FishingScene: React.FC = () => {
   const worldInfo = WORLDS_INFO[currentWorld];
   const activeBait = currentBaitId ? BAITS_INFO[currentBaitId] : null;
   const baitCount = currentBaitId ? baitInventory[currentBaitId] || 0 : 0;
-  const tierColor = lastCaughtFish ? TIER_COLORS[lastCaughtFish.tier] : TIER_COLORS[1];
-
-  // Water background based on World
-  const waterGradients: Record<number, string> = {
-    1: 'linear-gradient(180deg, rgba(8, 47, 73, 0.4) 0%, rgba(3, 105, 161, 0.6) 100%)', // Ocean Blue
-    2: 'linear-gradient(180deg, rgba(20, 83, 45, 0.4) 0%, rgba(13, 148, 136, 0.6) 100%)', // Radioactive Green/Teal
-    3: 'linear-gradient(180deg, rgba(67, 20, 7, 0.4) 0%, rgba(120, 53, 15, 0.6) 100%)', // Prehistoric Amber/Sepia
-  };
-
-  const waterColor = waterGradients[currentWorld] || waterGradients[1];
+  const waterBg = WATER_BACKGROUNDS[currentWorld] || WATER_BACKGROUNDS[1];
 
   return (
-    <div className="relative w-full h-[88px] shrink-0 rounded-2xl overflow-hidden border border-white/10 select-none flex flex-col justify-between p-2.5 shadow-inner">
-      {/* Dynamic Animated Water Background */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-colors duration-700"
-        style={{ background: waterColor }}
-      >
-        {/* Soft Wave Ripple 1 */}
-        <motion.div
-          animate={{ x: [-20, 20, -20] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -bottom-4 -left-10 -right-10 h-10 opacity-30 rounded-[100%]"
-          style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, transparent 70%)' }}
+    <div
+      className="relative w-full h-[112px] shrink-0 rounded-[16px] overflow-hidden border border-white/[0.06] select-none flex flex-col justify-between p-3"
+      style={{
+        background: waterBg,
+        boxShadow: TOKENS.shadows.innerHighlight,
+      }}
+    >
+      {/* Subtle Restrained Water Shimmer (Single soft line, no splash) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Calm horizontal water line */}
+        <div
+          className="absolute top-[38px] left-0 right-0 h-[1px] opacity-20"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }}
         />
-        {/* Soft Wave Ripple 2 */}
+        {/* Soft breathing bobber ripple */}
         <motion.div
-          animate={{ x: [20, -20, 20] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-0 -left-10 -right-10 h-6 opacity-20 rounded-[100%]"
-          style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 60%)' }}
+          animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.05, 0.15] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[34px] left-[52px] w-8 h-2 rounded-[100%] bg-white/30 blur-[2px]"
         />
       </div>
 
-      {/* Top Bar inside Fishing Scene */}
-      <div className="relative z-10 flex items-center justify-between gap-1">
-        <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
-          <span className="text-[10px] font-semibold tracking-wide text-white/90 uppercase px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-1 shrink-0 whitespace-nowrap">
+      {/* Top Header Row in Fishing Scene: World & Bait Left, Controls Right */}
+      <div className="relative z-10 flex items-center justify-between gap-2">
+        {/* Left: World Pill & Bait */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[10px] font-medium tracking-wide uppercase px-2 py-0.5 rounded-[6px] bg-[#14141A]/80 border border-white/[0.08] text-[#8A8A94] flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <span
-              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                isFishingActive ? 'bg-emerald-400 animate-pulse' : 'bg-white/40'
+              className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                isFishingActive ? 'bg-[#32D74B]' : 'bg-[#6E6E78]'
               }`}
             />
             <span>W{currentWorld}: {WORLD_SHORT_NAMES[currentWorld] || worldInfo.name}</span>
           </span>
 
           {lastCatchBatch && lastCatchBatch.caughtItems.length > 1 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-0.5 shrink-0 whitespace-nowrap">
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[6px] bg-[rgba(255,159,10,0.15)] text-[#FF9F0A] border border-[rgba(255,159,10,0.25)] flex items-center gap-0.5 shrink-0 whitespace-nowrap">
               <Zap className="w-2.5 h-2.5" strokeWidth={1.5} />
               +{lastCatchBatch.caughtItems.length}
             </span>
@@ -93,124 +95,114 @@ export const FishingScene: React.FC = () => {
             <button
               type="button"
               onClick={() => equipBait(null)}
-              title={`Mồi đang dùng: ${activeBait.name} (Click để tháo)`}
-              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border flex items-center gap-1 cursor-pointer transition-all shrink-0 whitespace-nowrap ${
-                currentBaitId === 'bait_boss_awakening'
-                  ? 'bg-rose-500/30 border-rose-400 text-rose-200 animate-pulse'
-                  : currentBaitId === 'bait_mystic_gold'
-                  ? 'bg-amber-400/25 border-amber-300 text-amber-200 shadow-sm'
-                  : 'bg-white/15 border-white/20 text-white/90 hover:bg-white/25'
-              }`}
+              title={`Mồi đang dùng: ${activeBait.name} (Click để gỡ)`}
+              className="text-[10px] font-medium px-2 py-0.5 rounded-[6px] bg-[#14141A]/90 border border-white/[0.08] text-[#F5F5F7] hover:border-white/20 transition-all flex items-center gap-1 cursor-pointer shrink-0"
             >
-              <span>{(currentBaitId && BAIT_SHORT_NAMES[currentBaitId]) || 'Mồi'}</span>
-              <span className="opacity-75">({baitCount.toLocaleString()})</span>
+              <span>{BAIT_SHORT_NAMES[currentBaitId!] || 'Mồi'}</span>
+              <span className="text-[#8A8A94]">({baitCount})</span>
             </button>
           )}
         </div>
 
-        {/* Fishing Toggle Button & Manual Reel */}
-        <div className="flex items-center gap-1 shrink-0 ml-1">
-          <button
-            type="button"
+        {/* Right: Actions (Manual Reel & Auto Toggle) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <ActionButton
+            variant="secondary"
+            size="sm"
             onClick={() => catchRound()}
-            className="px-2 py-0.5 text-[10px] font-semibold text-white/90 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-lg border border-white/15 cursor-pointer flex items-center gap-1 shadow-sm shrink-0 whitespace-nowrap"
-            title="Bấm để câu 1 lần ngay lập tức"
+            title="Kéo câu tức thì 1 lần"
           >
-            <span>Kéo câu</span>
-          </button>
+            Kéo câu
+          </ActionButton>
 
-          <button
-            type="button"
+          <ActionButton
+            variant={isFishingActive ? 'danger' : 'primary'}
+            size="sm"
             onClick={() => setFishingActive(!isFishingActive)}
-            className={`px-2 py-0.5 text-[10px] font-semibold transition-all rounded-lg border cursor-pointer flex items-center gap-1 shadow-md shrink-0 whitespace-nowrap ${
-              isFishingActive
-                ? 'bg-rose-500/25 border-rose-500/40 text-rose-200 hover:bg-rose-500/35'
-                : 'bg-emerald-500/30 border-emerald-400/50 text-emerald-200 hover:bg-emerald-500/40'
-            }`}
+            title={isFishingActive ? 'Tạm dừng câu tự động' : 'Bật câu tự động liên tục'}
           >
             {isFishingActive ? (
               <>
-                <Pause className="w-2.5 h-2.5 text-rose-300" strokeWidth={1.5} />
+                <Pause className="w-3 h-3" strokeWidth={1.5} />
                 <span>Dừng</span>
               </>
             ) : (
               <>
-                <Play className="w-2.5 h-2.5 text-emerald-300 fill-emerald-300" strokeWidth={1.5} />
+                <Play className="w-3 h-3 fill-current" strokeWidth={1.5} />
                 <span>Treo máy</span>
               </>
             )}
-          </button>
+          </ActionButton>
         </div>
       </div>
 
-      {/* Main Catch Showcase / Fish Floating */}
-      <div className="relative z-10 flex items-center justify-between px-1">
+      {/* Middle/Bottom Catch Showcase Row */}
+      <div className="relative z-10 flex items-center justify-between min-h-[44px]">
         <AnimatePresence mode="wait">
           {lastCaughtFish ? (
             <motion.div
               key={lastCaughtFish.id + (lastCatchBatch?.caughtItems.length || '')}
-              initial={{ opacity: 0, y: 12, scale: 0.8 }}
+              initial={{ opacity: 0, y: 6, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 24 }}
-              className="flex items-center gap-2 min-w-0"
+              exit={{ opacity: 0, y: -4, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-2.5 min-w-0"
             >
-              {/* Fish Icon with Glow */}
+              {/* Fish Icon Frame */}
               <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-lg shrink-0 p-0.5 overflow-hidden ${tierColor.bg} ${tierColor.border}`}
-                style={{ boxShadow: `0 0 16px ${tierColor.glow}` }}
+                className="w-9 h-9 rounded-[10px] bg-[#14141A] border border-white/[0.08] flex items-center justify-center shrink-0 p-1"
+                style={{ boxShadow: TOKENS.shadows.innerHighlight }}
               >
                 {getFishImageUrl(lastCaughtFish.id) ? (
                   <img
                     src={getFishImageUrl(lastCaughtFish.id)}
                     alt={lastCaughtFish.name}
-                    className="w-7 h-7 object-contain drop-shadow"
+                    className="w-7 h-7 object-contain"
                   />
                 ) : (
-                  <FishIcon className={`w-4 h-4 ${tierColor.text}`} strokeWidth={1.5} />
+                  <span className="text-base">🐟</span>
                 )}
               </div>
 
-              <div className="min-w-0 flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[12px] font-semibold text-white truncate max-w-[170px]">
+              {/* Fish Meta */}
+              <div className="min-w-0 flex flex-col justify-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-medium text-[#F5F5F7] truncate max-w-[150px]">
                     {lastCaughtFish.name}
                   </span>
-                  <span
-                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${tierColor.bg} ${tierColor.border} ${tierColor.text}`}
-                  >
-                    Tier {lastCaughtFish.tier}
+                  <TierBadge tier={lastCaughtFish.tier} />
+                </div>
+                <div className="flex items-center gap-1 text-[11px] text-[#8A8A94] mt-0.5">
+                  <span>Giá bán:</span>
+                  <span className="text-[#FFD60A] font-medium">
+                    <TabularNumber value={lastCaughtFish.basePrice} /> vàng
                   </span>
                 </div>
-                <span className="text-[10px] text-white/60 truncate">
-                  {tierColor.name} • {lastCaughtFish.basePrice.toLocaleString()} vàng
-                </span>
               </div>
             </motion.div>
           ) : (
-            <div className="flex items-center gap-2 text-white/50 text-xs py-1">
+            <div className="flex items-center gap-2 text-[#8A8A94] text-[12px] py-1">
               <motion.div
                 animate={{ y: [-1, 2, -1] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <FishIcon className="w-5 h-5 text-white/40" strokeWidth={1.5} />
-              </motion.div>
-              <span>Đang thả câu dưới nước...</span>
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-1.5 h-1.5 rounded-full bg-[#5AC8FA]"
+              />
+              <span className="font-normal">Đang buông cần dưới mặt nước...</span>
             </div>
           )}
         </AnimatePresence>
 
-        {/* Hazard / Time Rift / Info Banner Pill */}
+        {/* Hazard / Event Banner */}
         {bannerMessage && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/60 border border-white/15 text-[10px] text-amber-300 max-w-[150px] truncate"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-[8px] bg-[#14141A]/90 border border-white/[0.08] text-[11px] text-[#FF9F0A] max-w-[160px] truncate shrink-0"
           >
             {bannerMessage.includes('Nước Độc') ? (
-              <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" strokeWidth={1.5} />
+              <AlertTriangle className="w-3 h-3 text-[#FF453A] shrink-0" strokeWidth={1.5} />
             ) : (
-              <Sparkles className="w-3 h-3 text-yellow-300 shrink-0" strokeWidth={1.5} />
+              <Sparkles className="w-3 h-3 text-[#FFD60A] shrink-0" strokeWidth={1.5} />
             )}
             <span className="truncate">{bannerMessage}</span>
           </motion.div>

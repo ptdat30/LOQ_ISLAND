@@ -1,10 +1,13 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Trophy, Crown, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Check } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
-import { TIER_COLORS } from '../data/ratesData';
 import { getFishImageUrl } from '../data/fishImages';
-import type { Fish as FishType, FishTier } from '../../../types/fishing';
+import { TierBadge } from './shared/TierBadge';
+import { TabularNumber } from './shared/TabularNumber';
+import { ActionButton } from './shared/ActionButton';
+import { TOKENS, TierNumber } from '../constants/tokens';
+import type { Fish as FishType } from '../../../types/fishing';
 
 interface CatchCelebrationProps {
   fish?: FishType | null;
@@ -25,157 +28,152 @@ export const CatchCelebration: React.FC<CatchCelebrationProps> = ({
   const activeFish = propFish ?? storeFish;
   const clearCelebration = propOnClose ?? storeClear;
 
-  const validTier = (celebrationTier && celebrationTier >= 1 && celebrationTier <= 7 ? celebrationTier : 5) as FishTier;
-  const style = TIER_COLORS[validTier];
+  const validTier = (celebrationTier && celebrationTier >= 1 && celebrationTier <= 7
+    ? celebrationTier
+    : 5) as TierNumber;
+  const tierConfig = TOKENS.colors.tier[validTier];
   const isTier7 = celebrationTier === 7;
   const isTier6 = celebrationTier === 6;
 
-  // Lightweight particle count optimized for 60fps
-  const particleCount = isTier7 ? 14 : isTier6 ? 8 : 6;
-
-  // Memoize particle coordinates unconditionally at the top of the hook chain
-  const particles = useMemo(() => {
-    return Array.from({ length: particleCount }).map((_, i) => {
-      const offsetX = (i / particleCount - 0.5) * 300 + Math.sin(i * 1.7) * 25;
-      return {
-        id: i,
-        startX: offsetX,
-        endX: offsetX + Math.cos(i * 1.3) * 35,
-        scale: 0.5 + (i % 3) * 0.25,
-        duration: 1.4 + (i % 4) * 0.25,
-        delay: (i * 0.09) % 0.5,
-      };
-    });
-  }, [particleCount]);
+  // Auto dismiss after 3.2s
+  useEffect(() => {
+    if (!celebrationTier || !activeFish) return;
+    const timer = setTimeout(() => {
+      clearCelebration();
+    }, 3200);
+    return () => clearTimeout(timer);
+  }, [celebrationTier, activeFish, clearCelebration]);
 
   if (!celebrationTier || !activeFish) return null;
 
+  const fishImage = getFishImageUrl(activeFish.id);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.88 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.92 }}
-      transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-      className={`absolute inset-0 z-50 rounded-[32px] overflow-hidden flex flex-col items-center justify-center p-4 backdrop-blur-3xl select-none text-white transform-gpu will-change-transform ${
-        isTier7
-          ? 'bg-gradient-to-b from-amber-950/95 via-black/95 to-amber-900/95 border-2 border-yellow-300 shadow-[0_0_80px_rgba(253,224,71,0.6)]'
-          : isTier6
-          ? 'bg-black/95 border border-rose-500/60 shadow-[0_0_50px_rgba(244,63,94,0.4)]'
-          : 'bg-black/95 border border-amber-500/50 shadow-[0_0_35px_rgba(245,158,11,0.3)]'
-      }`}
-    >
-      {/* Floating Particles with GPU Acceleration */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {particles.map((p) => (
-          <motion.div
-            key={p.id}
-            initial={{
-              x: p.startX,
-              y: 120,
-              opacity: 0,
-              scale: p.scale,
-            }}
-            animate={{
-              y: -140,
-              opacity: [0, 1, 1, 0],
-              x: p.endX,
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              ease: 'easeOut',
-              delay: p.delay,
-            }}
-            className="absolute left-1/2 bottom-0 w-2 h-2 rounded-full will-change-transform transform-gpu"
-            style={{
-              background: isTier7
-                ? '#fde047'
-                : isTier6
-                ? '#fb7185'
-                : '#fbbf24',
-              boxShadow: `0 0 10px ${style.glow}`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Dismiss button */}
-      <button
-        type="button"
-        onClick={clearCelebration}
-        className="absolute top-3 right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors cursor-pointer z-10"
-      >
-        <X className="w-4 h-4" strokeWidth={1.5} />
-      </button>
-
-      {/* Header icon badge */}
+    <AnimatePresence>
       <motion.div
-        initial={{ scale: 0, rotate: -15 }}
-        animate={{ scale: [0, 1.2, 1], rotate: [0, 8, 0] }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="w-14 h-14 rounded-2xl flex items-center justify-center border shadow-2xl mb-2 will-change-transform transform-gpu"
-        style={{
-          background: style.glow,
-          borderColor: isTier7 ? '#fde047' : '#ffffff40',
-        }}
-      >
-        {getFishImageUrl(activeFish.id) ? (
-          <img
-            src={getFishImageUrl(activeFish.id)}
-            alt={activeFish.name}
-            className="w-12 h-12 object-contain drop-shadow-2xl"
-          />
-        ) : isTier7 ? (
-          <Crown className="w-8 h-8 text-yellow-200 fill-yellow-300 drop-shadow-md" strokeWidth={1.5} />
-        ) : (
-          <Trophy className="w-7 h-7 text-white drop-shadow-md" strokeWidth={1.5} />
-        )}
-      </motion.div>
-
-      {/* Tier Category */}
-      <motion.span
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-        className={`text-[11px] font-extrabold uppercase tracking-widest px-3 py-0.5 rounded-full border mb-1 ${style.bg} ${style.border} ${style.text}`}
-      >
-        {isTier7 ? '👑 BOSS ĐỘC TÔN (DIVINE)' : `${style.name.toUpperCase()} (TIER ${celebrationTier})`}
-      </motion.span>
-
-      {/* Fish Name */}
-      <motion.h2
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="text-[17px] font-black text-center text-white drop-shadow-lg max-w-[360px] leading-tight"
-      >
-        {activeFish.name}
-      </motion.h2>
-
-      {/* Reward Info */}
-      <motion.div
+        key="quiet-catch-overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.28 }}
-        className="flex items-center gap-3 mt-2 text-[12px] font-bold"
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 z-50 rounded-[18px] overflow-hidden flex flex-col justify-between p-4 select-none"
+        style={{
+          backgroundColor: isTier7 ? '#101018' : TOKENS.colors.bgOpacity,
+          backdropFilter: TOKENS.blur.rootPill,
+          boxShadow: isTier7
+            ? `0 0 30px ${tierConfig.glow}, ${TOKENS.colors.innerHighlightStrong}`
+            : isTier6
+            ? `0 0 20px ${tierConfig.glow}, ${TOKENS.colors.innerHighlight}`
+            : TOKENS.shadow.elevated,
+        }}
       >
-        <span className="text-amber-300 flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5" strokeWidth={1.5} />
-          +{activeFish.basePrice.toLocaleString()} vàng
-        </span>
+        {/* Tier 7 Quick Flash (chớp trắng 3 lần) */}
         {isTier7 && (
-          <span className="text-sky-300 flex items-center gap-1 bg-sky-500/20 px-2 py-0.5 rounded-lg border border-sky-400/40">
-            💎 Chắc chắn rớt 10 Kim Cương!
-          </span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.4, 0, 0.4, 0, 0.4, 0] }}
+            transition={{ duration: 0.8, times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1] }}
+            className="absolute inset-0 bg-white pointer-events-none z-30"
+          />
         )}
-      </motion.div>
 
-      {/* First-time catch unlock callout */}
-      {activeFish.description && (
-        <p className="text-[10px] text-white/60 text-center max-w-[340px] italic mt-1 line-clamp-2">
-          "{activeFish.description}"
-        </p>
-      )}
-    </motion.div>
+        {/* Subtle radial center glow (ánh sáng tỏa từ tâm icon, không dùng particle) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at 50% 45%, ${tierConfig.glow} 0%, transparent 65%)`,
+            opacity: 0.25,
+          }}
+        />
+
+        {/* Top Header: Tension (Left: Label & Tier Badge, Right: Dismiss) */}
+        <div className="flex items-center justify-between z-10">
+          <div className="flex items-center gap-2">
+            <TierBadge tier={validTier} />
+            <span
+              className="text-[#8A8A94] font-medium tracking-wide uppercase font-mono"
+              style={{ fontSize: TOKENS.typography.micro.fontSize }}
+            >
+              {isTier7 ? 'Thần Thú Thức Tỉnh' : isTier6 ? 'Sinh Vật Thần Thoại' : 'Chiến Tích Quý Hiếm'}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={clearCelebration}
+            className="p-1 rounded-md text-[#8A8A94] hover:text-[#F5F5F7] transition-colors cursor-pointer active:scale-95"
+            title="Đóng thông báo"
+          >
+            <X className="w-4 h-4" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* Center: Scaled Fish Artwork with Haptic Shake */}
+        <motion.div
+          initial={{ scale: 0.8, x: 0 }}
+          animate={{
+            scale: [0.8, 1.15, 1.0],
+            x: [0, -2, 2, -2, 2, 0],
+          }}
+          transition={{
+            scale: { duration: 0.38, ease: [0.34, 1.56, 0.64, 1] },
+            x: { duration: 0.22, delay: 0.1 },
+          }}
+          className="relative flex items-center justify-center my-auto py-2 z-10"
+        >
+          {fishImage ? (
+            <img
+              src={fishImage}
+              alt={activeFish.name}
+              className="w-24 h-24 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)]"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-[#5AC8FA]">
+              <span className="text-2xl font-bold font-mono">T{validTier}</span>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Bottom Details: Tension (Tên + Kích thước căn trái, Giá bán + Nút Thu cất căn phải) */}
+        <div
+          className="flex items-center justify-between pt-2.5 z-10"
+          style={{ borderTop: `1px solid ${TOKENS.colors.borderSubtle}` }}
+        >
+          <div className="flex flex-col min-w-0 pr-2">
+            <h3
+              className="text-[#F5F5F7] font-semibold truncate leading-tight font-display"
+              style={{ fontSize: TOKENS.typography.body.fontSize }}
+            >
+              {activeFish.name}
+            </h3>
+            <span
+              className="text-[#8A8A94] font-mono text-[11px] mt-0.5"
+            >
+              Kích thước: {activeFish.minSize} ~ {activeFish.maxSize} kg
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="text-right font-mono">
+              <span className="text-[10px] text-[#8A8A94] block uppercase">Giá trị</span>
+              <TabularNumber
+                value={activeFish.basePrice}
+                suffix=" vàng"
+                className="text-xs font-bold text-[#FFD60A]"
+              />
+            </div>
+
+            <ActionButton
+              variant="primary"
+              size="sm"
+              onClick={clearCelebration}
+              icon={<Check className="w-3.5 h-3.5 text-[#0A0A0F]" strokeWidth={2} />}
+            >
+              Thu cất
+            </ActionButton>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 };

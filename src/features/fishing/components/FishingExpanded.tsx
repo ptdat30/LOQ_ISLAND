@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, Fish, Coins, Gem, Dna, Music } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
+import { ViewHeader } from './shared/ViewHeader';
 import { FishingScene } from './FishingScene';
 import { FishBasket } from './FishBasket';
 import { PlayerStatus } from './PlayerStatus';
@@ -21,6 +21,13 @@ interface FishingExpandedProps {
   renderCustomizationSubView?: React.ReactNode;
   renderLibrarySubView?: React.ReactNode;
 }
+
+const SUBVIEW_TITLES: Record<string, string> = {
+  shop: 'Cửa hàng',
+  skillTree: 'Lưỡi câu cốt lõi',
+  customization: 'Tùy biến',
+  library: 'Thư viện',
+};
 
 export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   onCollapse,
@@ -54,103 +61,47 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
     }
   }, [newFishNotification, clearNewFishNotification]);
 
+  const viewTitle = activeSubTab === 'fishing' ? 'Câu Cá Idle' : (SUBVIEW_TITLES[activeSubTab] || 'Câu Cá');
+
   return (
-    <div className="w-full h-full flex flex-col justify-between p-3 select-none text-white relative">
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-white/10 shrink-0 gap-2">
-        <div className="flex items-center gap-2 shrink-0">
-          {activeSubTab !== 'fishing' ? (
-            <button
-              type="button"
-              onClick={() => setActiveSubTab('fishing')}
-              className="p-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
-              <span>Quay lại</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-md bg-sky-500/20 flex items-center justify-center">
-                <Fish className="w-3.5 h-3.5 text-sky-400" strokeWidth={1.5} />
-              </div>
-              <span className="text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap">
-                Câu Cá Idle
-              </span>
-            </div>
-          )}
-        </div>
+    <div
+      className="w-full h-full flex flex-col justify-between p-3 select-none text-[#F5F5F7] relative"
+      style={{
+        backgroundColor: 'rgba(10, 10, 15, 0.94)',
+        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+      }}
+    >
+      {/* Top Header Bar using AAA ViewHeader */}
+      <ViewHeader
+        title={viewTitle}
+        onBack={activeSubTab !== 'fishing' ? () => setActiveSubTab('fishing') : undefined}
+        onClose={onCollapse}
+        onOpenMedia={onOpenMedia}
+        hasMedia={hasMedia}
+        gold={gold}
+        diamonds={diamonds}
+        mutationPoints={mutationPoints}
+      />
 
-        {/* Currency Display Bar (Always visible in all subviews!) */}
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-2.5 px-2.5 py-0.5 rounded-xl bg-white/[0.06] border border-white/10 text-xs shadow-inner">
-            {/* Gold */}
-            <div className="flex items-center gap-1 shrink-0" title={`Tổng vàng hiện có: ${gold.toLocaleString()}`}>
-              <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
-              <span className="text-[11px] font-bold text-amber-300 tabular-nums whitespace-nowrap">
-                {gold.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Diamonds */}
-            <div className="flex items-center gap-1 shrink-0" title={`Kim Cương: ${diamonds.toLocaleString()}`}>
-              <Gem className="w-3.5 h-3.5 text-sky-400 shrink-0" strokeWidth={1.5} />
-              <span className="text-[11px] font-bold text-sky-300 tabular-nums whitespace-nowrap">
-                {diamonds.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Mutation Points (only when > 0) */}
-            {mutationPoints > 0 && (
-              <div className="flex items-center gap-1 shrink-0" title={`Điểm Đột Biến: ${mutationPoints.toLocaleString()}`}>
-                <Dna className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={1.5} />
-                <span className="text-[11px] font-bold text-purple-300 tabular-nums whitespace-nowrap">
-                  {mutationPoints.toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {hasMedia && onOpenMedia && (
-            <button
-              type="button"
-              onClick={onOpenMedia}
-              className="p-1 rounded-md text-emerald-400/80 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors cursor-pointer shrink-0"
-              title="Chuyển sang Trình phát nhạc (Alt+M)"
-            >
-              <Music className="w-4 h-4" strokeWidth={1.5} />
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onCollapse}
-            className="p-1 rounded-md text-white/60 hover:text-rose-400 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-            title="Thu nhỏ về Dynamic Island"
-          >
-            <X className="w-4 h-4" strokeWidth={1.5} />
-          </button>
-        </div>
-      </div>
-
-      {/* New Fish Unlocked Notification Banner (3 seconds) */}
+      {/* New Fish Unlocked Notification Banner (Restrained Apple/Linear Style) */}
       <AnimatePresence>
         {newFishNotification && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.95 }}
-            className="my-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500/30 via-indigo-500/30 to-purple-500/30 border border-sky-400/50 flex items-center justify-between text-[11px] text-sky-200 shadow-lg shadow-sky-500/20"
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="my-1 px-3 py-1.5 rounded-[10px] bg-[#14141A] border border-[rgba(90,200,250,0.3)] flex items-center justify-between text-[12px] text-[#5AC8FA]"
+            style={{ boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)' }}
           >
-            <span className="flex items-center gap-1.5 font-medium">
-              <span>🆕</span>
-              <span>
-                Loài mới! <strong className="text-white">"{newFishNotification}"</strong> đã được thêm vào Thư viện.
-              </span>
+            <span className="flex items-center gap-1.5 font-normal truncate">
+              <span className="font-semibold text-[#F5F5F7]">Loài mới:</span>
+              <span className="truncate">"{newFishNotification}" đã lưu vào thư viện</span>
             </span>
             <button
               type="button"
               onClick={() => setActiveSubTab('library')}
-              className="text-[10px] underline font-bold ml-2 cursor-pointer text-sky-300 hover:text-white"
+              className="text-[11px] font-medium ml-2 px-1.5 py-0.5 rounded-[6px] bg-[rgba(90,200,250,0.12)] text-[#5AC8FA] hover:bg-[rgba(90,200,250,0.2)] transition-colors cursor-pointer shrink-0"
             >
               Xem ngay
             </button>
@@ -158,29 +109,31 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Offline Earning Notification Banner if any */}
+      {/* Offline Earnings Notification Banner (Restrained Style) */}
       <AnimatePresence>
         {offlineEarningsReport && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="my-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-yellow-500/25 border border-yellow-400/40 flex items-center justify-between text-[11px] text-amber-200"
+            transition={{ duration: 0.15 }}
+            className="my-1 px-3 py-1.5 rounded-[10px] bg-[#14141A] border border-[rgba(255,159,10,0.25)] flex items-center justify-between text-[12px] text-[#8A8A94]"
+            style={{ boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04)' }}
           >
-            <span>
-              🎉 Chào mừng trở lại! Bạn kiếm được{' '}
-              <strong className="text-white">{offlineEarningsReport.gold.toLocaleString()} vàng</strong> trong{' '}
-              {offlineEarningsReport.hours} giờ qua.
+            <span className="truncate">
+              Chào mừng trở lại! Kiếm được{' '}
+              <strong className="text-[#FFD60A] font-semibold">{offlineEarningsReport.gold.toLocaleString()} vàng</strong>{' '}
+              trong {offlineEarningsReport.hours}h
               {offlineEarningsReport.newFishNames && offlineEarningsReport.newFishNames.length > 0 && (
-                <span className="ml-1 text-emerald-300">
-                  (+{offlineEarningsReport.newFishNames.length} loài cá mới!)
+                <span className="ml-1 text-[#32D74B]">
+                  (+{offlineEarningsReport.newFishNames.length} loài mới)
                 </span>
               )}
             </span>
             <button
               type="button"
               onClick={dismissOfflineReport}
-              className="text-[10px] underline font-bold ml-2 cursor-pointer text-amber-300"
+              className="text-[11px] font-medium ml-2 text-[#8A8A94] hover:text-[#F5F5F7] transition-colors cursor-pointer shrink-0"
             >
               Đóng
             </button>
@@ -194,14 +147,17 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
           {activeSubTab === 'fishing' && (
             <motion.div
               key="subtab-fishing"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="h-full flex flex-col justify-between gap-1.5"
+              className="h-full flex flex-col justify-between gap-2"
             >
+              {/* Zone 1: Water Surface (40% ~ 130px) */}
               <FishingScene />
+              {/* Zone 2: Fish Basket (35% ~ 110px) */}
               <FishBasket />
+              {/* Zone 3: Navigation / Status (25% ~ 70px) */}
               <PlayerStatus />
             </motion.div>
           )}
@@ -211,7 +167,7 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               key="subtab-shop"
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
               className="h-full"
             >
@@ -224,7 +180,7 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               key="subtab-skillTree"
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
               className="h-full"
             >
@@ -237,7 +193,7 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               key="subtab-customization"
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
               className="h-full"
             >
@@ -250,7 +206,7 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               key="subtab-library"
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
               className="h-full"
             >

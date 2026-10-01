@@ -12,6 +12,7 @@ import {
 import { useFishingStore } from '../stores/fishingStore';
 import { RODS, BAITS_INFO } from '../data/shopData';
 import { WORLDS_INFO } from '../data/fishData';
+import { TOKENS } from '../constants/tokens';
 import type { WorldId } from '../../../types/fishing';
 
 export const PlayerStatus: React.FC = () => {
@@ -33,9 +34,9 @@ export const PlayerStatus: React.FC = () => {
     const success = switchWorld(w);
     if (!success) {
       if (w === 2) {
-        setWorldSwitchError('Cần "Cần Hợp Kim Chống Bức Xạ" để vào World 2!');
+        setWorldSwitchError('Cần "Cần Hợp Kim Chống Bức Xạ" để mở World 2');
       } else if (w === 3) {
-        setWorldSwitchError('Cần "Cần Câu Xương Khủng Long" để vào World 3!');
+        setWorldSwitchError('Cần "Cần Câu Xương Khủng Long" để mở World 3');
       }
       setTimeout(() => setWorldSwitchError(null), 3000);
     } else {
@@ -44,63 +45,68 @@ export const PlayerStatus: React.FC = () => {
   };
 
   return (
-    <div className="w-full shrink-0 bg-white/[0.03] border border-white/10 rounded-2xl p-2.5 flex flex-col gap-2 select-none relative">
-      {/* Top Row: Sub-view Navigation Buttons (Shop, Skill Tree, Library, Customization) */}
+    <div
+      className="w-full shrink-0 bg-[#14141A] border border-white/[0.06] rounded-[16px] p-2.5 flex flex-col justify-between select-none relative"
+      style={{
+        boxShadow: TOKENS.shadows.innerHighlight,
+      }}
+    >
+      {/* Top Row: Sub-view Navigation Buttons (Ghost/Secondary style with 1.5px stroke icons) */}
       <div className="grid grid-cols-4 gap-1.5 w-full">
         <button
           type="button"
           onClick={() => setActiveSubTab('shop')}
-          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
-          title="Mở Shop (Cần, Mồi, Nâng cấp, Xe)"
+          className="h-8 px-2 rounded-[10px] bg-[#1A1A22] hover:bg-[#20202C] text-[#F5F5F7] border border-white/[0.06] cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-[0.96] transition-all"
+          title="Cửa hàng trang bị & mồi câu"
         >
-          <Store className="w-3.5 h-3.5 text-emerald-400 shrink-0" strokeWidth={1.5} />
-          <span>Shop</span>
+          <Store className="w-3.5 h-3.5 text-[#5AC8FA] shrink-0" strokeWidth={1.5} />
+          <span className="text-[12px] font-medium">Shop</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('skillTree')}
-          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
-          title="Lưỡi Câu Cốt Lõi (Kỹ năng)"
+          className="h-8 px-2 rounded-[10px] bg-[#1A1A22] hover:bg-[#20202C] text-[#F5F5F7] border border-white/[0.06] cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-[0.96] transition-all"
+          title="Cây kỹ năng Lưỡi Câu Cốt Lõi"
         >
-          <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={1.5} />
-          <span>Kỹ năng</span>
+          <Sparkles className="w-3.5 h-3.5 text-[#BF5AF2] shrink-0" strokeWidth={1.5} />
+          <span className="text-[12px] font-medium">Kỹ năng</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('library')}
-          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
-          title="Thư Viện Cá (Bộ Sưu Tầm 84 Loài)"
+          className="h-8 px-2 rounded-[10px] bg-[#1A1A22] hover:bg-[#20202C] text-[#F5F5F7] border border-white/[0.06] cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-[0.96] transition-all"
+          title="Thư viện bách khoa 84 loài cá"
         >
-          <BookOpen className="w-3.5 h-3.5 text-sky-400 shrink-0" strokeWidth={1.5} />
-          <span>Thư viện</span>
+          <BookOpen className="w-3.5 h-3.5 text-[#5AC8FA] shrink-0" strokeWidth={1.5} />
+          <span className="text-[12px] font-medium">Thư viện</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('customization')}
-          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
-          title="Tùy biến Dynamic Island"
+          className="h-8 px-2 rounded-[10px] bg-[#1A1A22] hover:bg-[#20202C] text-[#F5F5F7] border border-white/[0.06] cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-[0.96] transition-all"
+          title="Tùy biến giao diện đảo"
         >
-          <Palette className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
-          <span>Giao diện</span>
+          <Palette className="w-3.5 h-3.5 text-[#FF9F0A] shrink-0" strokeWidth={1.5} />
+          <span className="text-[12px] font-medium">Giao diện</span>
         </button>
       </div>
 
       {/* Bottom Row: Equipped Rod, Bait, and World Selector */}
-      <div className="flex items-center justify-between text-[11px] text-white/70 pt-0.5">
+      <div className="flex items-center justify-between text-[11px] text-[#8A8A94] pt-1.5">
         <div className="flex items-center gap-3 truncate max-w-[270px]">
           {/* Rod */}
           <div className="truncate flex items-center gap-1">
-            <span className="text-white/40 text-[10px]">Cần:</span>
-            <span className="font-medium text-white/90 truncate">{rod.name}</span>
+            <span className="text-[#8A8A94]">Cần:</span>
+            <span className="font-medium text-[#F5F5F7] truncate">{rod.name}</span>
           </div>
 
           {/* Bait */}
           <div className="truncate flex items-center gap-1">
-            <span className="text-white/40 text-[10px]">Mồi:</span>
-            <span className="font-medium text-white/90 truncate">
+            <span className="text-[#8A8A94]">Mồi:</span>
+            <span className="font-medium text-[#F5F5F7] truncate">
               {bait ? `${bait.name} (${baitCount})` : 'Không có'}
             </span>
           </div>
@@ -111,21 +117,23 @@ export const PlayerStatus: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsWorldMenuOpen(!isWorldMenuOpen)}
-            className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] font-medium text-white/90 border border-white/10 cursor-pointer flex items-center gap-1 transition-all"
+            className="px-2 py-1 rounded-[8px] bg-white/[0.06] hover:bg-white/[0.1] text-[11px] font-medium text-[#F5F5F7] border border-white/[0.06] cursor-pointer flex items-center gap-1 transition-colors"
           >
-            <Globe className="w-3 h-3 text-sky-400" strokeWidth={1.5} />
+            <Globe className="w-3 h-3 text-[#5AC8FA]" strokeWidth={1.5} />
             <span>World {currentWorld}</span>
-            <ChevronUp className="w-2.5 h-2.5 text-white/50" strokeWidth={1.5} />
+            <ChevronUp className="w-2.5 h-2.5 text-[#8A8A94]" strokeWidth={1.5} />
           </button>
 
           {/* World Selector Dropdown */}
           <AnimatePresence>
             {isWorldMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                initial={{ opacity: 0, y: 4, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                className="absolute right-0 bottom-7 z-30 w-48 bg-black/95 border border-white/20 backdrop-blur-2xl rounded-xl p-1 shadow-2xl space-y-0.5"
+                exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 bottom-8 z-30 w-52 bg-[#14141A] border border-white/[0.08] rounded-[12px] p-1 shadow-2xl space-y-0.5"
+                style={{ boxShadow: TOKENS.shadows.card }}
               >
                 {([1, 2, 3] as WorldId[]).map((w) => {
                   const info = WORLDS_INFO[w];
@@ -139,21 +147,21 @@ export const PlayerStatus: React.FC = () => {
                       key={w}
                       type="button"
                       onClick={() => handleSelectWorld(w)}
-                      className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] transition-colors flex items-center justify-between cursor-pointer ${
+                      className={`w-full text-left px-2.5 py-1.5 rounded-[8px] text-[11px] transition-colors flex items-center justify-between cursor-pointer ${
                         isCurrent
-                          ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                          ? 'bg-[#5AC8FA]/15 text-[#5AC8FA] border border-[#5AC8FA]/30'
                           : isLocked
-                          ? 'text-white/40 hover:bg-white/5'
-                          : 'text-white/80 hover:bg-white/15'
+                          ? 'text-[#6E6E78] hover:bg-white/[0.04]'
+                          : 'text-[#F5F5F7] hover:bg-white/[0.08]'
                       }`}
                     >
                       <div className="flex flex-col">
                         <span className="font-semibold">{info.name}</span>
-                        <span className="text-[9px] text-white/50">
+                        <span className="text-[10px] text-[#8A8A94]">
                           {info.subtitle} (×{info.priceMultiplier} vàng)
                         </span>
                       </div>
-                      {isLocked && <Lock className="w-3 h-3 text-rose-400/80" strokeWidth={1.5} />}
+                      {isLocked && <Lock className="w-3 h-3 text-[#FF453A]" strokeWidth={1.5} />}
                     </button>
                   );
                 })}
@@ -163,14 +171,14 @@ export const PlayerStatus: React.FC = () => {
         </div>
       </div>
 
-      {/* World switch requirement notification */}
+      {/* World Switch Error Banner */}
       <AnimatePresence>
         {worldSwitchError && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="text-[10px] font-medium text-rose-300 bg-rose-500/20 border border-rose-500/30 rounded-lg px-2 py-0.5"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            className="absolute left-2 right-2 -bottom-8 z-40 px-2.5 py-1 bg-[#14141A] border border-[#FF453A]/40 rounded-[8px] text-[11px] text-[#FF453A] shadow-xl text-center"
           >
             {worldSwitchError}
           </motion.div>

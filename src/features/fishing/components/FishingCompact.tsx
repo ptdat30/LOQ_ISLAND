@@ -1,9 +1,8 @@
 import React from 'react';
-import { Fish, Trophy } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
-import { TIER_COLORS } from '../data/ratesData';
 import { FISH_MAP } from '../data/fishData';
 import { getFishImageUrl } from '../data/fishImages';
+import { TierBadge } from './shared/TierBadge';
 
 interface FishingCompactProps {
   onClick?: () => void;
@@ -15,72 +14,76 @@ export const FishingCompact: React.FC<FishingCompactProps> = ({ onClick }) => {
   const highestFishId = useFishingStore((s) => s.stats.highestFishCaughtRecentId);
   const isFishingActive = useFishingStore((s) => s.isFishingActive);
   const activeAvatarId = useFishingStore((s) => s.islandCustomization.activeFishAvatarId);
-  const newUncaughtPillAlert = useFishingStore((s) => s.newUncaughtPillAlert);
 
   const highestFish = highestFishId ? FISH_MAP[highestFishId] : null;
-  const tierStyle = highestTier ? TIER_COLORS[highestTier] : TIER_COLORS[1];
-
   const avatarFish = activeAvatarId ? FISH_MAP[activeAvatarId] : null;
-  const avatarStyle = avatarFish ? TIER_COLORS[avatarFish.tier] : null;
   const avatarImg = getFishImageUrl(activeAvatarId);
 
   const formatGoldShort = (num: number): string => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
+    return num.toLocaleString();
   };
 
   return (
     <div
       onClick={onClick}
-      className="flex items-center justify-between w-full h-full px-2 cursor-pointer select-none relative"
-      title={newUncaughtPillAlert ? `Cá mới: ${newUncaughtPillAlert}` : undefined}
+      className="flex items-center justify-between w-full h-full px-3 cursor-pointer select-none relative"
     >
-      {/* Left: Fish Icon (or Avatar) + Status Dot */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        <div className="relative">
+      {/* CỰC TRÁI: Custom Fish Icon 20px + Active Pulse Dot */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
           {avatarImg ? (
             <img
               src={avatarImg}
               alt={avatarFish?.name || 'Avatar'}
-              className="w-4 h-4 object-contain rounded-full drop-shadow-sm"
+              className="w-5 h-5 object-contain rounded-full"
             />
           ) : (
-            <Fish
-              className={`w-4 h-4 ${avatarStyle ? avatarStyle.text : 'text-sky-400'}`}
-              strokeWidth={avatarStyle ? 2 : 1.5}
-              style={avatarStyle?.glow ? { filter: `drop-shadow(0 0 6px ${avatarStyle.glow})` } : undefined}
-            />
+            <svg
+              className="w-5 h-5 text-[#5AC8FA]"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.46-3.44 6-7 6s-7.56-2.54-8.5-6Z" />
+              <path d="M18 12v.5" />
+              <path d="M16 17.93a1 1 0 0 1-.76.71c-3.14.73-6.52-.77-8.24-3.64" />
+              <path d="M2 16s3-1.5 4.5-4C5 9.5 2 8 2 8s1 2.5 1 4-1 4-1 4Z" />
+            </svg>
           )}
           {isFishingActive && (
-            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span
+              className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#32D74B]"
+              style={{ boxShadow: '0 0 4px rgba(50,215,75,0.8)' }}
+            />
           )}
         </div>
-        <span className="text-[12px] font-semibold text-white/95 tabular-nums">
-          {formatGoldShort(goldEarnedPastHour)}/h
+
+        {/* CỰC GIỮA: Số vàng/giờ font 13px tabular numbers */}
+        <span
+          className="text-[#F5F5F7] tabular-nums font-mono font-semibold"
+          style={{ fontSize: '13px', fontFeatureSettings: '"tnum"' }}
+        >
+          {formatGoldShort(goldEarnedPastHour)} vàng/h
         </span>
       </div>
 
-      {/* Right: Highest Tier Caught Recent Badge & New Fish Blinking Dot */}
-      <div className="flex items-center gap-1 shrink-0">
+      {/* CỰC PHẢI: Tier Badge 22x16px */}
+      <div className="flex items-center gap-1.5 shrink-0">
         {highestTier ? (
-          <div
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-semibold ${tierStyle.bg} ${tierStyle.border} ${tierStyle.text}`}
-            title={highestFish ? highestFish.name : `Tier ${highestTier}`}
-          >
-            <Trophy className="w-2.5 h-2.5" strokeWidth={1.5} />
-            <span>T{highestTier}</span>
+          <div title={highestFish ? `${highestFish.name} (Tier ${highestTier})` : `Tier ${highestTier}`}>
+            <TierBadge tier={highestTier} />
           </div>
         ) : (
-          <span className="text-[10px] text-white/40 italic">Đang câu...</span>
-        )}
-
-        {/* New Uncaught Fish Notification Dot (blue, blinks 3 times / pulses) */}
-        {newUncaughtPillAlert && (
           <span
-            className="w-2 h-2 rounded-full bg-sky-400 animate-pulse ml-0.5 shadow-sm shadow-sky-400"
-            title={`Cá mới: ${newUncaughtPillAlert}`}
-          />
+            className="text-[#8A8A94] italic font-mono text-[10px]"
+          >
+            Đang thả câu
+          </span>
         )}
       </div>
     </div>

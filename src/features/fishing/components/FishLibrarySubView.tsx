@@ -23,6 +23,8 @@ import { ALL_FISH, WORLDS_INFO } from '../data/fishData';
 import { getFishImageUrl } from '../data/fishImages';
 import { removeVietnameseTones } from '../utils/stringUtils';
 import { formatFishSize } from '../utils/sizeUtils';
+import { TierBadge } from './shared/TierBadge';
+import { TOKENS } from '../constants/tokens';
 import type { Fish, FishTier } from '../../../types/fishing';
 
 // Color map for tiers exactly matching specifications
@@ -359,91 +361,77 @@ export const FishLibrarySubView: React.FC = () => {
               return (
                 <motion.div
                   key={fish.id}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: Math.min(0.2, index * 0.015) }}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setSelectedFish(fish)}
-                  className={`relative rounded-2xl border flex flex-col items-center justify-between cursor-pointer transition-all ${
-                    isLibraryEnlarged ? 'h-[92px] p-2' : 'h-[80px] p-1.5'
+                  className={`relative rounded-[12px] border flex flex-col items-center justify-between cursor-pointer transition-all group ${
+                    isLibraryEnlarged ? 'h-[110px] p-2.5' : 'h-[96px] p-2'
                   } ${
                     isUnlocked
-                      ? `${tierColor.bg} ${tierColor.border} hover:border-white/50 shadow-sm`
-                      : 'bg-black/30 border-white/5 opacity-55 hover:opacity-85'
+                      ? 'bg-[#14141A] border-white/[0.06] hover:border-white/20'
+                      : 'bg-[#1E1E28]/60 border-white/[0.04] opacity-60 hover:opacity-80'
                   }`}
-                  style={isUnlocked && fish.tier === 7 ? { boxShadow: tierColor.glow } : undefined}
+                  style={{ boxShadow: TOKENS.shadows.innerHighlight }}
                 >
-                  {/* Tier Badge (Góc phải trên) */}
-                  <span
-                    className="absolute top-1 right-1 px-1 py-0.2 rounded text-[8px] font-black uppercase"
-                    style={{
-                      color: tierColor.hex,
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      border: `1px solid ${tierColor.hex}60`,
-                    }}
-                  >
-                    T{fish.tier}
-                  </span>
-
-                  {/* World Badge (Góc trái trên) */}
-                  <span className="absolute top-1 left-1.5 text-[8px] font-bold text-white/50">
-                    W{fish.world}
-                  </span>
+                  {/* Top: World Tag Left & TierBadge Right */}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[9px] font-medium text-[#8A8A94]">
+                      W{fish.world}
+                    </span>
+                    <TierBadge tier={fish.tier} />
+                  </div>
 
                   {/* Avatar Active Indicator */}
                   {isCurrentAvatar && (
-                    <span className="absolute -top-1.5 left-7 bg-amber-400 text-black rounded-full p-0.5 shadow-md">
-                      <Star className="w-2 h-2 fill-black" />
+                    <span className="absolute -top-1.5 left-6 bg-[#FFD60A] text-[#0A0A0F] rounded-full p-0.5 shadow-sm">
+                      <Star className="w-2.5 h-2.5 fill-current" strokeWidth={1.5} />
                     </span>
                   )}
 
                   {/* Fish Artwork Sprite */}
                   <div
-                    className={`flex items-center justify-center mt-1 ${
-                      isLibraryEnlarged ? 'w-12 h-12' : 'w-10 h-10'
+                    className={`flex items-center justify-center my-0.5 ${
+                      isLibraryEnlarged ? 'w-14 h-14' : 'w-11 h-11'
                     }`}
                   >
                     {fishImg ? (
                       <img
                         src={fishImg}
                         alt={isUnlocked ? fish.name : '???'}
-                        className={`object-contain drop-shadow transition-transform duration-200 pointer-events-none ${
-                          isLibraryEnlarged ? 'w-11 h-11' : 'w-9 h-9'
-                        } ${isUnlocked ? '' : 'filter brightness-0 opacity-30'}`}
+                        className={`object-contain transition-transform duration-200 ease-out pointer-events-none group-hover:scale-[1.08] ${
+                          isLibraryEnlarged ? 'w-12 h-12' : 'w-10 h-10'
+                        } ${isUnlocked ? '' : 'filter brightness-0 opacity-20'}`}
                         loading="lazy"
                       />
                     ) : isUnlocked ? (
                       <FishIcon
-                        className={isLibraryEnlarged ? 'w-9 h-9' : 'w-8 h-8'}
+                        className={isLibraryEnlarged ? 'w-10 h-10' : 'w-8 h-8'}
                         style={{ color: tierColor.hex }}
                         strokeWidth={1.5}
                       />
                     ) : (
                       <FishIcon
-                        className="w-7 h-7 text-white/30 filter brightness-0 opacity-40"
+                        className="w-8 h-8 text-[#6E6E78] filter brightness-0 opacity-20"
                         strokeWidth={1.5}
                       />
                     )}
                   </div>
 
-                  {/* Fish Name */}
-                  <span
-                    className={`font-semibold text-white/90 truncate w-full text-center leading-tight ${
-                      isLibraryEnlarged ? 'text-[11px]' : 'text-[10px]'
-                    }`}
-                  >
-                    {isUnlocked ? fish.name : '???'}
-                  </span>
-
-                  {/* Bottom Right: Catch count or Lock */}
-                  {isUnlocked ? (
-                    <span className="absolute bottom-1 right-1 text-[9px] font-bold text-amber-300 bg-black/60 px-1 rounded">
-                      ×{entry.catchCount}
+                  {/* Bottom: Fish Name & Count / Lock */}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[12px] font-medium text-[#F5F5F7] truncate max-w-[70%]">
+                      {isUnlocked ? fish.name : '???'}
                     </span>
-                  ) : (
-                    <Lock className="w-2.5 h-2.5 absolute bottom-1 right-1 text-white/40" strokeWidth={1.5} />
-                  )}
+                    {isUnlocked ? (
+                      <span className="text-[10px] font-normal text-[#8A8A94] tabular-nums">
+                        ×{entry.catchCount}
+                      </span>
+                    ) : (
+                      <Lock className="w-3.5 h-3.5 text-[#6E6E78]" strokeWidth={1.5} />
+                    )}
+                  </div>
                 </motion.div>
               );
             })}
