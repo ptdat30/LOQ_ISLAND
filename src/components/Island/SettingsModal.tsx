@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
@@ -303,20 +303,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 value={notifSettings.pulseCount}
                 onChange={(e) => updateNotifSettings({ pulseCount: Number(e.target.value) })}
                 className="w-full accent-amber-400 cursor-pointer"
-              />
-            </div>
-
-            {/* Âm thanh nhắc nhở (mặc định tắt) */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.04] border border-white/5 opacity-60">
-              <div>
-                <h4 className="font-medium text-white/90">Âm thanh nhắc nhở</h4>
-                <p className="text-[11px] text-white/50">Mặc định tắt theo triết lý yên tĩnh</p>
-              </div>
-              <input
-                type="checkbox"
-                disabled
-                checked={false}
-                className="w-4 h-4"
               />
             </div>
           </div>

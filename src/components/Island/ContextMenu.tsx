@@ -5,17 +5,13 @@ import {
   PinOff,
   Settings,
   Layers,
-  Sparkles,
   Power,
   Trash2,
   Egg,
-  BellRing,
-  Clock,
   Fish,
   BookOpen,
 } from 'lucide-react';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
-import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
 import { useFishingStore } from '../../features/fishing/stores/fishingStore';
 
 interface ContextMenuProps {
@@ -25,7 +21,6 @@ interface ContextMenuProps {
   onTogglePin: () => void;
   onOpenSettings: () => void;
   onOpenDrawer: () => void;
-  onOpenSimulator: () => void;
   onOpenFishing?: () => void;
   onClearAll: () => void;
   onQuit: () => void;
@@ -39,14 +34,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onTogglePin,
   onOpenSettings,
   onOpenDrawer,
-  onOpenSimulator,
   onOpenFishing,
   onClearAll,
   onQuit,
   onClose,
 }) => {
   const { status: eggStatus, startTimer, cancelTimer, dismissAlert: dismissEggAlert } = useEggTimerStore();
-  const { testTriggerNow, createRealtimeTestTask } = useShiftScheduleStore();
 
   if (!isOpen) return null;
 
@@ -69,33 +62,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           onClick={(e) => e.stopPropagation()}
           className="absolute w-60 bg-black/95 border border-white/20 backdrop-blur-2xl rounded-2xl p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.8)] text-white select-none text-xs space-y-0.5"
         >
-          {/* ─── QUICK TEST ACTIONS FOR SHIFT REMINDER ─── */}
-          <button
-            type="button"
-            onClick={() => {
-              testTriggerNow();
-              onClose();
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition-colors font-medium cursor-pointer"
-          >
-            <BellRing className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
-            <span>⚡ Thử ngay thông báo đến giờ (Alert)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              createRealtimeTestTask(1);
-              onClose();
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors cursor-pointer"
-          >
-            <Clock className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
-            <span>⏰ Đặt thử task 1 phút nữa (Test Realtime)</span>
-          </button>
-
-          <div className="h-px bg-white/10 my-1" />
-
           {/* ─── EGG TIMER ACTION ─── */}
           <button
             type="button"
@@ -145,18 +111,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             {isPinned ? <PinOff className="w-4 h-4 text-sky-400" strokeWidth={1.5} /> : <Pin className="w-4 h-4 text-white/70" strokeWidth={1.5} />}
             <span>{isPinned ? 'Bỏ ghim mở rộng' : 'Ghim mở rộng'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              onOpenSimulator();
-              onClose();
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400" strokeWidth={1.5} />
-            <span>Bộ giả lập (Mock Simulator)</span>
           </button>
 
           <button

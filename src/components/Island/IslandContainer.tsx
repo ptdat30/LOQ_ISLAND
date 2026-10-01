@@ -9,7 +9,6 @@ import { SecondaryBubble } from './SecondaryBubble';
 import { EggTimerBubble } from './EggTimer/EggTimerBubble';
 import { QueueDrawer } from './QueueDrawer';
 import { SettingsModal } from './SettingsModal';
-import { SimulatorDrawer } from './SimulatorDrawer';
 import { ContextMenu } from './ContextMenu';
 import { ApprovalCard } from './ApprovalCard';
 import { useFishingStore } from '../../features/fishing/stores/fishingStore';
@@ -112,7 +111,6 @@ export const IslandContainer: React.FC = () => {
 
   const { loadInitialSettings, setShortcutConflict } = useSettingsStore();
 
-  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [approvalRequest, setApprovalRequest] = useState<{
     approvalId: string;
@@ -204,8 +202,8 @@ export const IslandContainer: React.FC = () => {
         return;
       }
 
-      // If drawer, settings, simulator, or context menu is open, expand hit-test bounds to full window!
-      if (isDrawerOpen || isSettingsOpen || isSimulatorOpen || approvalRequest || contextMenuPos) {
+      // If drawer, settings, or context menu is open, expand hit-test bounds to full window!
+      if (isDrawerOpen || isSettingsOpen || approvalRequest || contextMenuPos) {
         window.electronAPI.syncPillBounds({
           x: 0,
           y: 0,
@@ -231,7 +229,7 @@ export const IslandContainer: React.FC = () => {
       };
       window.electronAPI.syncPillBounds(bounds);
     });
-  }, [isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest, contextMenuPos]);
+  }, [isDrawerOpen, isSettingsOpen, approvalRequest, contextMenuPos]);
 
   // Listen to Electron events
   useEffect(() => {
@@ -288,7 +286,7 @@ export const IslandContainer: React.FC = () => {
       observer.observe(containerRef.current);
     }
     return () => observer.disconnect();
-  }, [syncBounds, mode, total, isEggInPrimary, isShiftAlert, isDrawerOpen, isSettingsOpen, isSimulatorOpen, approvalRequest, contextMenuPos]);
+  }, [syncBounds, mode, total, isEggInPrimary, isShiftAlert, isDrawerOpen, isSettingsOpen, approvalRequest, contextMenuPos]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -301,17 +299,8 @@ export const IslandContainer: React.FC = () => {
           useEggTimerStore.getState().dismissAlert();
           setExpanded(false);
         } else if (isSettingsOpen) toggleSettings();
-        else if (isSimulatorOpen) setIsSimulatorOpen(false);
         else if (isDrawerOpen) toggleDrawer();
         else setExpanded(false);
-      } else if (e.key.toLowerCase() === 'a' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-        // Quick trigger Shift Alert (Ctrl+Shift+A)
-        e.preventDefault();
-        useShiftScheduleStore.getState().testTriggerNow();
-      } else if (e.key.toLowerCase() === 't' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-        // Quick create 1-minute real-time countdown task (Ctrl+Shift+T)
-        e.preventDefault();
-        useShiftScheduleStore.getState().createRealtimeTestTask(1);
       } else if (e.key.toLowerCase() === 'e' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
         // Quick trigger egg boiling timer (Ctrl+Shift+E)
         e.preventDefault();
@@ -334,7 +323,7 @@ export const IslandContainer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeShiftAlertTask, eggStatus, isSettingsOpen, isSimulatorOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity, handleEggStart, dismissShiftAlert]);
+  }, [activeShiftAlertTask, eggStatus, isSettingsOpen, isDrawerOpen, toggleSettings, toggleDrawer, setExpanded, cycleActivity, handleEggStart, dismissShiftAlert]);
 
   // Secondary bubbles resolution
   let secondaryLeft: Activity | null = null;
@@ -559,11 +548,6 @@ export const IslandContainer: React.FC = () => {
           onClose={toggleDrawer}
         />
 
-        <SimulatorDrawer
-          isOpen={isSimulatorOpen}
-          onClose={() => setIsSimulatorOpen(false)}
-        />
-
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={toggleSettings}
@@ -578,7 +562,6 @@ export const IslandContainer: React.FC = () => {
         onTogglePin={togglePinned}
         onOpenSettings={toggleSettings}
         onOpenDrawer={toggleDrawer}
-        onOpenSimulator={() => setIsSimulatorOpen(true)}
         onOpenFishing={() => {
           setActiveSlot('fishing');
           setExpanded(true);

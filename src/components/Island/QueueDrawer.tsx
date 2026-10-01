@@ -1,8 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Activity } from '../../types/activity';
 import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
-import { Check, ChevronRight, ChevronDown, X, Trash2, CheckCircle2, BellRing, Clock, RotateCcw, RefreshCw } from 'lucide-react';
+import { Check, ChevronRight, ChevronDown, X, Trash2, CheckCircle2, RotateCcw, RefreshCw } from 'lucide-react';
 
 interface QueueDrawerProps {
   isOpen: boolean;
@@ -21,8 +21,6 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
     tasks,
     markDone,
     deleteTask,
-    testTriggerNow,
-    createRealtimeTestTask,
     resetAllToPending,
     resetToDefaultSchedule,
     feedbackMessage,
@@ -80,42 +78,6 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
                 <X size={15} strokeWidth={1.5} />
               </button>
             </div>
-          </div>
-
-          {/* Quick 1-click test buttons */}
-          <div className="grid grid-cols-3 gap-1.5 mb-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                testTriggerNow();
-                onClose();
-              }}
-              className="py-1.5 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 font-semibold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer"
-            >
-              <BellRing size={12} strokeWidth={2} />
-              <span>⚡ Thử Alert</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                createRealtimeTestTask(1);
-                onClose();
-              }}
-              className="py-1.5 px-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 font-semibold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer"
-            >
-              <Clock size={12} strokeWidth={2} />
-              <span>⏰ Đặt 1 phút</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={resetAllToPending}
-              className="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white/80 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer"
-            >
-              <RotateCcw size={12} strokeWidth={1.5} />
-              <span>🔄 Reset Pending</span>
-            </button>
           </div>
 
           {/* Task List */}
@@ -207,17 +169,6 @@ export const QueueDrawer: React.FC<QueueDrawerProps> = ({
                               <CheckCircle2 size={12} strokeWidth={2} /> Đã xong
                             </button>
                           )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              testTriggerNow(task.id);
-                              onClose();
-                            }}
-                            className="py-1 px-2.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium transition-colors"
-                          >
-                            Trigger Alert Ngay
-                          </button>
                           <button
                             type="button"
                             onClick={(e) => {
