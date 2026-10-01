@@ -157,6 +157,8 @@ interface FishingStoreState extends PlayerFishingState {
   inspectFish: (fishId: string | null) => void;
 }
 
+let isStoreInitialized = false;
+
 export const useFishingStore = create<FishingStoreState>((set, get) => ({
   ...INITIAL_PLAYER_STATE,
 
@@ -177,12 +179,26 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
   setLibraryEnlarged: (enlarged) => set({ isLibraryEnlarged: enlarged }),
   inspectFish: (fishId) => set({ inspectingFishId: fishId, activeSubTab: fishId ? 'library' : get().activeSubTab }),
 
-  initStore: () => {
+  initStore: async () => {
     try {
-      if (typeof localStorage === 'undefined') return;
-      const raw = localStorage.getItem(STORAGE_KEY);
+      let raw: string | null = null;
+
+      // 1. Try to load from permanent disk file via Electron IPC (port-agnostic)
+      if (typeof window !== 'undefined' && window.electronAPI?.loadFishingData) {
+        try {
+          raw = await window.electronAPI.loadFishingData();
+        } catch (e) {
+          console.warn('Could not read fishing data via Electron IPC', e);
+        }
+      }
+
+      // 2. Fallback to localStorage if no disk file found
+      if (!raw && typeof localStorage !== 'undefined') {
+        raw = localStorage.getItem(STORAGE_KEY);
+      }
+
       if (raw) {
-        const parsed = JSON.parse(raw) as Partial<PlayerFishingState>;
+        const parsed = JSON.parse(raw) as Partial<PlayerFishingState> & { isFishingActive?: boolean };
         const merged: PlayerFishingState = {
           ...INITIAL_PLAYER_STATE,
           ...parsed,
@@ -257,30 +273,42 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
 
           if (offlineGold > 0 || newOfflineFishNames.length > 0) {
             merged.gold += offlineGold;
+            isStoreInitialized = true;
             set({
               ...merged,
+              isFishingActive: parsed.isFishingActive ?? false,
               offlineEarningsReport: {
                 gold: offlineGold,
                 hours: Math.round(elapsedHours * 10) / 10,
                 newFishNames: newOfflineFishNames,
               },
             });
+            get().saveToStorage();
             return;
           }
         }
 
-        set({ ...merged });
+        isStoreInitialized = true;
+        set({
+          ...merged,
+          isFishingActive: parsed.isFishingActive ?? false,
+        });
+        get().saveToStorage();
+        return;
       }
+
+      isStoreInitialized = true;
     } catch (e) {
-      console.error('Failed to load fishing state from localStorage', e);
+      console.error('Failed to load fishing state', e);
+      isStoreInitialized = true;
     }
   },
 
   saveToStorage: () => {
     try {
-      if (typeof localStorage === 'undefined') return;
+      if (!isStoreInitialized) return; // Prevent overwriting with uninitialized state
       const state = get();
-      const persistData: PlayerFishingState = {
+      const persistData: PlayerFishingState & { isFishingActive: boolean } = {
         gold: state.gold,
         diamonds: state.diamonds,
         mutationPoints: state.mutationPoints,
@@ -307,10 +335,23 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
           ...state.stats,
           lastSavedTimestamp: Date.now(),
         },
+        isFishingActive: state.isFishingActive,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistData));
+
+      const json = JSON.stringify(persistData);
+
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, json);
+      }
+
+      // Persist to permanent disk file via Electron IPC
+      if (typeof window !== 'undefined' && window.electronAPI?.saveFishingData) {
+        window.electronAPI.saveFishingData(json).catch((err) => {
+          console.warn('Failed to save fishing data to disk', err);
+        });
+      }
     } catch (e) {
-      console.error('Failed to save fishing state to localStorage', e);
+      console.error('Failed to save fishing state', e);
     }
   },
 
@@ -522,6 +563,8 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
       },
     });
 
+    // Save state after round
+    get().saveToStorage();
     return result;
   },
 

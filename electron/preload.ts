@@ -18,6 +18,8 @@ export interface ElectronAPI {
   onSystemMediaUpdate: (callback: (activity: unknown) => void) => () => void;
   onSystemMediaIdle: (callback: () => void) => () => void;
   togglePlayPause: () => Promise<boolean>;
+  saveFishingData: (data: string) => Promise<boolean>;
+  loadFishingData: () => Promise<string | null>;
   closeApp: () => void;
   minimizeApp: () => void;
 }
@@ -69,6 +71,8 @@ const api: ElectronAPI = {
     return () => ipcRenderer.removeListener('system-media-idle', handler);
   },
   togglePlayPause: () => ipcRenderer.invoke('media-toggle-play-pause'),
+  saveFishingData: (data: string) => ipcRenderer.invoke('save-fishing-data', data),
+  loadFishingData: () => ipcRenderer.invoke('load-fishing-data'),
   closeApp: () => ipcRenderer.send('close-app'),
   minimizeApp: () => ipcRenderer.send('minimize-app'),
 };

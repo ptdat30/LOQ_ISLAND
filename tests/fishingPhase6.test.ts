@@ -11,6 +11,8 @@ describe('Fishing Game - Phase 6 Auto Upgrades & Offline Earning Verification', 
       currentWorld: 1,
       basket: [],
       caughtFishHistory: [],
+      celebrationTier: null,
+      collectionCompletedCelebration: false,
     });
   });
 

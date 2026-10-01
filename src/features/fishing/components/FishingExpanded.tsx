@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowLeft, Fish } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
-import { useFishingLoop } from '../hooks/useFishingLoop';
 import { FishingScene } from './FishingScene';
 import { FishBasket } from './FishBasket';
 import { PlayerStatus } from './PlayerStatus';
@@ -28,9 +27,6 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   renderCustomizationSubView,
   renderLibrarySubView,
 }) => {
-  // Activate idle fishing loop and periodic auto-save
-  useFishingLoop();
-
   const activeSubTab = useFishingStore((s) => s.activeSubTab);
   const setActiveSubTab = useFishingStore((s) => s.setActiveSubTab);
   const offlineEarningsReport = useFishingStore((s) => s.offlineEarningsReport);

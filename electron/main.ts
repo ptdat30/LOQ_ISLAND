@@ -240,6 +240,30 @@ ipcMain.handle('media-toggle-play-pause', () => {
   return true;
 });
 
+// File-based Fishing Save Persistence (port-agnostic & permanent across dev/prod)
+ipcMain.handle('save-fishing-data', (_event, data: string) => {
+  try {
+    const saveFilePath = path.join(app.getPath('userData'), 'fishing_save.json');
+    fs.writeFileSync(saveFilePath, data, 'utf-8');
+    return true;
+  } catch (err) {
+    log.error('Failed to write fishing_save.json to disk:', err);
+    return false;
+  }
+});
+
+ipcMain.handle('load-fishing-data', () => {
+  try {
+    const saveFilePath = path.join(app.getPath('userData'), 'fishing_save.json');
+    if (fs.existsSync(saveFilePath)) {
+      return fs.readFileSync(saveFilePath, 'utf-8');
+    }
+  } catch (err) {
+    log.error('Failed to read fishing_save.json from disk:', err);
+  }
+  return null;
+});
+
 ipcMain.on('close-app', () => {
   app.quit();
 });

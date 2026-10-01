@@ -15,6 +15,7 @@ import { ApprovalCard } from './ApprovalCard';
 import { useFishingStore } from '../../features/fishing/stores/fishingStore';
 import { FishingBubble } from '../../features/fishing/components/FishingBubble';
 import { useOfflineEarning } from '../../features/fishing/hooks/useOfflineEarning';
+import { useFishingLoop } from '../../features/fishing/hooks/useFishingLoop';
 import type { Activity } from '../../types/activity';
 
 export const IslandContainer: React.FC = () => {
@@ -71,8 +72,9 @@ export const IslandContainer: React.FC = () => {
   const isFishingActive = useFishingStore((s) => s.isFishingActive);
   const celebrationTier = useFishingStore((s) => s.celebrationTier);
 
-  // Initialize offline earnings on app load
+  // Initialize offline earnings and idle fishing loop globally
   useOfflineEarning();
+  useFishingLoop();
 
   // Global hotkey Alt+F for Mini-Game Câu Cá & Alt+L for Thư Viện Cá
   useEffect(() => {
