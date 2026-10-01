@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Pin,
@@ -11,9 +11,12 @@ import {
   Egg,
   BellRing,
   Clock,
+  Fish,
+  BookOpen,
 } from 'lucide-react';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
 import { useShiftScheduleStore } from '../../stores/shiftScheduleStore';
+import { useFishingStore } from '../../features/fishing/stores/fishingStore';
 
 interface ContextMenuProps {
   isOpen: boolean;
@@ -23,6 +26,7 @@ interface ContextMenuProps {
   onOpenSettings: () => void;
   onOpenDrawer: () => void;
   onOpenSimulator: () => void;
+  onOpenFishing?: () => void;
   onClearAll: () => void;
   onQuit: () => void;
   onClose: () => void;
@@ -36,6 +40,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onOpenSettings,
   onOpenDrawer,
   onOpenSimulator,
+  onOpenFishing,
   onClearAll,
   onQuit,
   onClose,
@@ -164,6 +169,31 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <Settings className="w-4 h-4 text-white/70" strokeWidth={1.5} />
             <span>Cài đặt</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onOpenFishing?.();
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sky-500/20 text-sky-300 hover:text-sky-200 transition-colors cursor-pointer"
+          >
+            <Fish className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
+            <span>🎣 Mini-Game Câu Cá (Alt+F)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onOpenFishing?.();
+              useFishingStore.getState().setActiveSubTab('library');
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sky-500/20 text-sky-300 hover:text-sky-200 transition-colors cursor-pointer"
+          >
+            <BookOpen className="w-4 h-4 text-sky-400" strokeWidth={1.5} />
+            <span>📚 Mở Thư Viện (Alt+L)</span>
           </button>
 
           <div className="h-px bg-white/10 my-1" />

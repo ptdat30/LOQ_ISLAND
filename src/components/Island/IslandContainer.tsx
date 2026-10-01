@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useActivityStore } from '../../stores/activityStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -12,6 +12,9 @@ import { SettingsModal } from './SettingsModal';
 import { SimulatorDrawer } from './SimulatorDrawer';
 import { ContextMenu } from './ContextMenu';
 import { ApprovalCard } from './ApprovalCard';
+import { useFishingStore } from '../../features/fishing/stores/fishingStore';
+import { FishingBubble } from '../../features/fishing/components/FishingBubble';
+import { useOfflineEarning } from '../../features/fishing/hooks/useOfflineEarning';
 import type { Activity } from '../../types/activity';
 
 export const IslandContainer: React.FC = () => {
@@ -61,13 +64,49 @@ export const IslandContainer: React.FC = () => {
   const total = activities.length;
   const primaryActivity = total > 0 ? activities[activeActivityIndex] || activities[0] : null;
 
-  // Active slot tracking: 'shift' | 'egg' | 'activity'
-  const [activeSlot, setActiveSlot] = useState<'shift' | 'egg' | 'activity'>('shift');
+  // Active slot tracking: 'shift' | 'egg' | 'activity' | 'fishing'
+  const [activeSlot, setActiveSlot] = useState<'shift' | 'egg' | 'activity' | 'fishing'>('shift');
   const isEggActive = eggStatus === 'running' || eggStatus === 'alert';
+
+  const isFishingActive = useFishingStore((s) => s.isFishingActive);
+  const celebrationTier = useFishingStore((s) => s.celebrationTier);
+
+  // Initialize offline earnings on app load
+  useOfflineEarning();
+
+  // Global hotkey Alt+F for Mini-Game Câu Cá & Alt+L for Thư Viện Cá
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        if (activeSlot === 'fishing') {
+          setActiveSlot('shift');
+          setExpanded(false);
+        } else {
+          setActiveSlot('fishing');
+          setExpanded(true);
+        }
+      } else if (e.altKey && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault();
+        setActiveSlot('fishing');
+        useFishingStore.getState().setActiveSubTab('library');
+        setExpanded(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeSlot, setExpanded]);
 
   // Priority resolution for primary pill
   const isShiftAlert = !!activeShiftAlertTask;
-  const isEggInPrimary = !isShiftAlert && (total === 0 ? isEggActive : (isEggActive && activeSlot === 'egg'));
+  const isCelebrationTakeover = !!celebrationTier && celebrationTier >= 5;
+  const isEggInPrimary =
+    !isShiftAlert && !isCelebrationTakeover && (total === 0 ? isEggActive : isEggActive && activeSlot === 'egg');
+  const isFishingInPrimary =
+    isCelebrationTakeover ||
+    (!isShiftAlert &&
+      !isEggInPrimary &&
+      (activeSlot === 'fishing' || (total === 0 && !isEggActive && isFishingActive)));
 
   const { loadInitialSettings, setShortcutConflict } = useSettingsStore();
 
@@ -367,8 +406,20 @@ export const IslandContainer: React.FC = () => {
         onMouseLeave={handleContainerMouseLeave}
         className="pointer-events-auto flex flex-col items-center"
       >
-        {/* Top Flex Row: [Secondary Bubble L] [Primary Pill] [Secondary Bubble R] */}
+        {/* Top Flex Row: [Fishing Bubble?] [Secondary Bubble L] [Primary Pill] [Secondary Bubble R] */}
         <div className="flex items-center justify-center gap-2">
+          {/* Fishing Bubble when fishing is running idle in background */}
+          <AnimatePresence>
+            {!isFishingInPrimary && isFishingActive && (
+              <FishingBubble
+                onClick={() => {
+                  setActiveSlot('fishing');
+                  setExpanded(true);
+                }}
+              />
+            )}
+          </AnimatePresence>
+
           {/* Bubble Left */}
           <AnimatePresence>
             {showEggBubble ? (
@@ -398,16 +449,23 @@ export const IslandContainer: React.FC = () => {
               key={
                 isShiftAlert
                   ? `primary-shift-${activeShiftAlertTask?.id}`
+                  : isFishingInPrimary
+                  ? 'primary-fishing-pill'
                   : isEggInPrimary
                   ? 'primary-egg-pill'
                   : (primaryActivity?.id || 'idle-pill')
               }
-              activity={isShiftAlert || isEggInPrimary ? null : primaryActivity}
-              isEggTimer={isEggInPrimary}
+              activity={isShiftAlert || isEggInPrimary || isFishingInPrimary ? null : primaryActivity}
+              isEggTimer={!isFishingInPrimary && isEggInPrimary}
+              isFishing={isFishingInPrimary}
               isExpanded={mode === 'expanded'}
               isPinned={isPinned}
               queuedCount={queuedCount}
               onEggStart={handleEggStart}
+              onOpenFishing={() => {
+                setActiveSlot('fishing');
+                setExpanded(true);
+              }}
               onTogglePin={togglePinned}
               onToggleExpand={() => {
                 const nextExpanded = mode !== 'expanded';
@@ -420,6 +478,9 @@ export const IslandContainer: React.FC = () => {
               onDismiss={() => {
                 if (isShiftAlert && activeShiftAlertTask) {
                   dismissShiftAlert(activeShiftAlertTask.id);
+                  setExpanded(false);
+                } else if (isFishingInPrimary) {
+                  setActiveSlot('shift');
                   setExpanded(false);
                 } else if (isEggInPrimary) {
                   useEggTimerStore.getState().cancelTimer();
@@ -516,6 +577,10 @@ export const IslandContainer: React.FC = () => {
         onOpenSettings={toggleSettings}
         onOpenDrawer={toggleDrawer}
         onOpenSimulator={() => setIsSimulatorOpen(true)}
+        onOpenFishing={() => {
+          setActiveSlot('fishing');
+          setExpanded(true);
+        }}
         onClearAll={() => {
           clearActivities();
           useEggTimerStore.getState().cancelTimer();

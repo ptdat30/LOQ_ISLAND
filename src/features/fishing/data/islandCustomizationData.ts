@@ -1,0 +1,126 @@
+import type { IslandColorCustomization, IslandEffectCustomization } from '../../../types/fishing';
+
+export const ISLAND_COLORS: IslandColorCustomization[] = [
+  {
+    id: 'color_default_black',
+    name: 'Đen tuyệt đối',
+    priceGold: 0,
+    priceDiamond: 0,
+    colorValue: '#000000',
+    cssStyle: { backgroundColor: '#000000' },
+  },
+  {
+    id: 'color_night_blue',
+    name: 'Xanh đêm',
+    priceGold: 10000,
+    priceDiamond: 0,
+    colorValue: '#0a192f',
+    cssStyle: { backgroundColor: '#0a192f' },
+  },
+  {
+    id: 'color_royal_purple',
+    name: 'Tím hoàng gia',
+    priceGold: 50000,
+    priceDiamond: 0,
+    colorValue: '#2d124d',
+    cssStyle: { backgroundColor: '#2d124d' },
+  },
+  {
+    id: 'color_blazing_red',
+    name: 'Đỏ rực',
+    priceGold: 100000,
+    priceDiamond: 0,
+    colorValue: '#450a0a',
+    cssStyle: { backgroundColor: '#450a0a' },
+  },
+  {
+    id: 'color_imperial_gold',
+    name: 'Vàng kim',
+    priceGold: 500000,
+    priceDiamond: 0,
+    colorValue: '#422006',
+    cssStyle: { backgroundColor: '#422006', borderColor: 'rgba(234, 179, 8, 0.4)' },
+  },
+  {
+    id: 'color_metallic_silver',
+    name: 'Bạc ánh kim',
+    priceGold: 1000000,
+    priceDiamond: 0,
+    colorValue: '#1e293b',
+    cssStyle: { backgroundColor: '#1e293b', borderColor: 'rgba(203, 213, 225, 0.4)' },
+  },
+  {
+    id: 'color_rainbow',
+    name: 'Cầu vồng',
+    priceGold: 0,
+    priceDiamond: 10,
+    colorValue: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #701a75 75%, #4c0519 100%)',
+    cssStyle: {
+      backgroundImage: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #701a75 75%, #4c0519 100%)',
+    },
+  },
+  {
+    id: 'color_transparent',
+    name: 'Trong suốt',
+    priceGold: 0,
+    priceDiamond: 50,
+    colorValue: 'rgba(0, 0, 0, 0.45)',
+    cssStyle: {
+      backgroundColor: 'rgba(0, 0, 0, 0.45)',
+      backdropFilter: 'blur(30px) saturate(190%)',
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+    },
+  },
+];
+
+export const ISLAND_EFFECTS: IslandEffectCustomization[] = [
+  {
+    id: 'effect_glow_light',
+    name: 'Glow nhẹ',
+    priceGold: 5000,
+    priceDiamond: 0,
+    effectType: 'glow_light',
+  },
+  {
+    id: 'effect_glow_strong',
+    name: 'Glow mạnh',
+    priceGold: 50000,
+    priceDiamond: 0,
+    effectType: 'glow_strong',
+  },
+  {
+    id: 'effect_pulse',
+    name: 'Pulse khi có activity mới',
+    priceGold: 100000,
+    priceDiamond: 0,
+    effectType: 'pulse',
+  },
+  {
+    id: 'effect_particles',
+    name: 'Particle bay lên khi mở rộng',
+    priceGold: 0,
+    priceDiamond: 500,
+    effectType: 'particles',
+  },
+  {
+    id: 'effect_ripple',
+    name: 'Ripple khi click',
+    priceGold: 0,
+    priceDiamond: 200,
+    effectType: 'ripple',
+  },
+  {
+    id: 'effect_aurora',
+    name: 'Aurora borealis',
+    priceGold: 0,
+    priceDiamond: 1000,
+    effectType: 'aurora',
+  },
+  {
+    id: 'effect_collection_master',
+    name: '👑 Collection Master (Độc Quyền 84/84)',
+    priceGold: 0,
+    priceDiamond: 0,
+    effectType: 'collection_master',
+  },
+];

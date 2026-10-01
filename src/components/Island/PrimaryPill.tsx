@@ -1,4 +1,4 @@
-﻿import React, { useRef } from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Activity } from '../../types/activity';
 import { IconRenderer } from './IconRenderer';
@@ -11,6 +11,10 @@ import { ShiftCompact } from './ShiftReminder/ShiftCompact';
 import { ShiftExpanded } from './ShiftReminder/ShiftExpanded';
 import { useEggTimerStore } from '../../stores/eggTimerStore';
 import { useShiftScheduleStore, getNextTaskInfo } from '../../stores/shiftScheduleStore';
+import { useFishingStore } from '../../features/fishing/stores/fishingStore';
+import { FishingCompact } from '../../features/fishing/components/FishingCompact';
+import { FishingExpanded } from '../../features/fishing/components/FishingExpanded';
+import { ISLAND_COLORS } from '../../features/fishing/data/islandCustomizationData';
 
 interface PrimaryPillProps {
   activity: Activity | null;
@@ -18,12 +22,14 @@ interface PrimaryPillProps {
   isPinned: boolean;
   queuedCount: number;
   isEggTimer?: boolean;
+  isFishing?: boolean;
   onTogglePin: () => void;
   onToggleExpand: () => void;
   onToggleDrawer: () => void;
   onDismiss: () => void;
   onActionClick?: (actionId: string) => void;
   onEggStart?: () => void;
+  onOpenFishing?: () => void;
 }
 
 // Lightweight spring - settles fast, no lingering micro-movements
@@ -35,16 +41,24 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
   isPinned,
   queuedCount,
   isEggTimer = false,
+  isFishing = false,
   onTogglePin,
   onToggleExpand,
   onToggleDrawer,
   onDismiss,
   onActionClick,
   onEggStart,
+  onOpenFishing,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { status: eggStatus, dismissAlert: dismissEggAlert, startTimer: startEggTimer } = useEggTimerStore();
   const { tasks, activeAlertTaskId } = useShiftScheduleStore();
+
+  const isFishingStoreActive = useFishingStore((s) => s.isFishingActive);
+  const activeSubTab = useFishingStore((s) => s.activeSubTab);
+  const celebrationTier = useFishingStore((s) => s.celebrationTier);
+  const islandCustomization = useFishingStore((s) => s.islandCustomization);
+  const fishingSettings = useFishingStore((s) => s.settings);
 
   const isEggAlert = eggStatus === 'alert';
   const alertShiftTask = tasks.find((t) => t.id === activeAlertTaskId || (t.enabled && t.status === 'alert'));
@@ -68,7 +82,9 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
 
     if (!isExpanded) {
       e.stopPropagation();
-      if (!activity && !isEggRunning && !isEggAlert && !showShiftAlert) {
+      if (isFishing) {
+        onToggleExpand();
+      } else if (!activity && !isEggRunning && !isEggAlert && !showShiftAlert) {
         // Idle state: clicking opens Queue Drawer
         onToggleDrawer();
       } else {
@@ -77,9 +93,28 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
     }
   };
 
+  // Compute dimensions
+  let targetWidth = 400;
+  let targetHeight = 170;
+
+  if (isFishing) {
+    if (celebrationTier && celebrationTier >= 5) {
+      targetWidth = 450;
+      targetHeight = 320;
+    } else if (activeSubTab !== 'fishing') {
+      targetWidth = 420;
+      targetHeight = 400;
+    } else {
+      targetWidth = 420;
+      targetHeight = 340;
+    }
+  }
+
   // Compute compact width
   let compactWidth = 240;
-  if (!activity && !isEggRunning) {
+  if (isFishing) {
+    compactWidth = 260;
+  } else if (!activity && !isEggRunning) {
     compactWidth = 270; // Fit Egg slot + Shift Countdown
   } else if (showEggExpanded && isEggRunning) {
     compactWidth = 200;
@@ -93,6 +128,18 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
     glowClass = 'animate-pill-glow';
   }
 
+  const activeColorObj = ISLAND_COLORS.find((c) => c.id === islandCustomization.activeColorId);
+  const activeBg = activeColorObj?.colorValue || islandColors.bg;
+
+  let effectShadow: string | undefined = undefined;
+  if (islandCustomization.activeEffectId === 'effect_glow_light') {
+    effectShadow = '0 0 20px rgba(56, 189, 248, 0.4)';
+  } else if (islandCustomization.activeEffectId === 'effect_glow_strong') {
+    effectShadow = '0 0 35px rgba(56, 189, 248, 0.8)';
+  } else if (islandCustomization.activeEffectId === 'effect_aurora') {
+    effectShadow = '0 0 40px rgba(168, 85, 247, 0.7), 0 0 80px rgba(56, 189, 248, 0.4)';
+  }
+
   return (
     <motion.div
       ref={containerRef}
@@ -101,8 +148,8 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
       animate={{
         opacity: 1,
         scale: 1,
-        width: isExpanded ? 400 : compactWidth,
-        height: isExpanded ? 170 : 37,
+        width: isExpanded ? targetWidth : compactWidth,
+        height: isExpanded ? targetHeight : 37,
         borderRadius: isExpanded ? 32 : 9999,
       }}
       exit={{ opacity: 0, scale: 0.7 }}
@@ -116,13 +163,14 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
         if (info.offset.y > 45 || info.velocity.y > 300) onToggleExpand();
       }}
       style={{
-        background: isShiftYellow && !isExpanded ? 'rgba(30, 24, 8, 0.95)' : islandColors.bg,
+        background: isShiftYellow && !isExpanded ? 'rgba(30, 24, 8, 0.95)' : activeBg,
         border: isShiftYellow && !isExpanded ? '1px solid rgba(255, 214, 10, 0.35)' : undefined,
         boxShadow: isEggAlert || isShiftAlert
           ? undefined
-          : isExpanded
-          ? '0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06)'
-          : islandColors.shadow,
+          : effectShadow ||
+            (isExpanded
+              ? '0 20px 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06)'
+              : islandColors.shadow),
         willChange: 'transform',
       }}
       className={`shrink-0 relative overflow-hidden select-none cursor-pointer ${glowClass}`}
@@ -144,8 +192,10 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
           transition: 'opacity 0.12s ease-out',
         }}
       >
-        {/* Case 1: Egg Timer Running in Primary */}
-        {isEggTimer && isEggRunning ? (
+        {/* Case 0: Fishing Game in Primary */}
+        {isFishing ? (
+          <FishingCompact onClick={onToggleExpand} />
+        ) : isEggTimer && isEggRunning ? (
           <EggTimerCompact
             onStart={() => {
               if (onEggStart) onEggStart();
@@ -212,25 +262,50 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
             </div>
           </>
         ) : (
-          /* Case 3: Idle Dynamic Island (Left: Egg Starter, Right: Shift Countdown) */
+          /* Case 3: Idle Dynamic Island (Left: Egg Starter & optional Fish Starter, Right: Shift Countdown) */
           <div className="flex items-center justify-between w-full">
-            {/* Slot bên trái: Icon Quả trứng (click để luộc 15p) */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                startEggTimer();
-                onEggStart?.();
-              }}
-              title="Click để bắt đầu luộc trứng 15 phút"
-              className="w-5 h-5 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/15 transition-all cursor-pointer shrink-0 mr-1"
-            >
-              <EggIcon size={13} className="stroke-[1.5]" />
-            </button>
+            <div className="flex items-center gap-1 shrink-0 mr-1">
+              {/* Slot bên trái: Icon Quả trứng (click để luộc 15p) */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEggTimer();
+                  onEggStart?.();
+                }}
+                title="Click để bắt đầu luộc trứng 15 phút"
+                className="w-5 h-5 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/15 transition-all cursor-pointer shrink-0"
+              >
+                <EggIcon size={13} className="stroke-[1.5]" />
+              </button>
+
+              {/* Optional Fish Starter icon if enabled */}
+              {fishingSettings.showFishIconOnPill && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenFishing?.();
+                  }}
+                  title="Click để mở Mini-Game Câu Cá (Alt+F)"
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-sky-400/70 hover:text-sky-300 hover:bg-white/15 transition-all cursor-pointer shrink-0"
+                >
+                  <IconRenderer name="Fish" className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
 
             {/* Slot chính: Đồng hồ nhắc nhở khung giờ di chuyển (click mở Queue Drawer) */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex items-center justify-between">
               <ShiftCompact onOpenDrawer={onToggleDrawer} />
+
+              {/* 6px Blue dot indicator when fishing is running idle in background */}
+              {isFishingStoreActive && (
+                <span
+                  title="Mini-Game Câu Cá đang chạy idle ngầm"
+                  className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.8)] shrink-0 ml-1"
+                />
+              )}
             </div>
           </div>
         )}
@@ -245,8 +320,10 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
           transition: 'opacity 0.15s ease-out',
         }}
       >
-        {/* Priority 1: Shift Reminder Alert */}
-        {showShiftAlert ? (
+        {/* Priority 0: Fishing Game Expanded */}
+        {isFishing ? (
+          <FishingExpanded onCollapse={onToggleExpand} />
+        ) : showShiftAlert ? (
           <ShiftExpanded task={alertShiftTask} onCollapse={onToggleExpand} />
         ) : showEggExpanded ? (
           /* Priority 2: Egg Timer Expanded */
