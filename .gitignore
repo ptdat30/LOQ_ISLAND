@@ -33,3 +33,6 @@ Thumbs.db
 # Electron-builder cache
 electron-builder-cache/
 release/
+
+# Root media files
+/videoplayback.mp4
