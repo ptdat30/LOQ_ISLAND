@@ -1,5 +1,5 @@
 // HyperIsland Fishing - Official Wiki Data
-export const WIKI_DATA = {
+const WIKI_DATA = {
   worlds: [
     {
       id: 1,
@@ -240,3 +240,10 @@ export const WIKI_DATA = {
     { type: "nuclear", name: "Lõi Hạt Nhân Siêu Phàm", mult: "x10.0", color: "#f43f5e", desc: "Hấp thụ năng lượng hạt nhân thuần khiết, phát quang rực rỡ, bán được giá gấp 10 lần!" }
   ]
 };
+
+if (typeof window !== 'undefined') {
+  window.WIKI_DATA = WIKI_DATA;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { WIKI_DATA };
+}
