@@ -85,6 +85,23 @@
       selection-background-color: rgba(34, 211, 238, 0.25);
     }
 
+    /* Full-Screen Looping Video Background */
+    #underwater-video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    #underwater-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     /* Fixed Underwater 3D Background Canvas */
     #underwater-canvas {
       position: fixed;
@@ -92,7 +109,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 0;
+      z-index: 1;
       pointer-events: none;
     }
 
@@ -178,7 +195,28 @@
 <body class="min-h-screen flex flex-col font-sans selection:bg-[#22D3EE]/20 selection:text-[#67E8F9] relative overflow-x-hidden">
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 0. FULL-SCREEN PROCEDURAL 3D UNDERWATER WEBGL BACKGROUND  -->
+  <!-- 0. FULL-SCREEN LOOPING UNDERWATER VIDEO BACKGROUND        -->
+  <!-- ───────────────────────────────────────────────────────── -->
+  <div id="underwater-video-container">
+    <video
+      id="underwater-video"
+      autoplay
+      loop
+      muted
+      playsinline
+      preload="auto"
+      src="videoplayback.mp4"
+    >
+      <source src="videoplayback.mp4" type="video/mp4">
+      <source src="assets/videoplayback.mp4" type="video/mp4">
+    </video>
+    <!-- Deep Ocean Darkening Vignette & Caustic Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-[#010812]/55 via-[#010812]/40 to-[#010812]/85 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-[#010812]/25 pointer-events-none"></div>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────── -->
+  <!-- 0.1 3D PARTICLES, BUBBLES & VOLUMETRIC BEAMS CANVAS       -->
   <!-- ───────────────────────────────────────────────────────── -->
   <canvas id="underwater-canvas"></canvas>
 
@@ -980,15 +1018,15 @@
       if (!canvas) return;
 
       oceanScene = new THREE.Scene();
-      oceanScene.fog = new THREE.FogExp2(0x010812, 0.012);
+      oceanScene.fog = new THREE.FogExp2(0x010812, 0.005);
 
       oceanCamera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
       oceanCamera.position.set(0, 0, 45);
 
-      oceanRenderer = new THREE.WebGLRenderer({ canvas, alpha: false, antialias: true });
+      oceanRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       oceanRenderer.setSize(window.innerWidth, window.innerHeight);
       oceanRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      oceanRenderer.setClearColor(0x010812, 1);
+      oceanRenderer.setClearColor(0x000000, 0);
 
       // Ambient & Directional Sunbeam Lighting
       const ambientLight = new THREE.AmbientLight(0x062A45, 1.2);
@@ -1814,6 +1852,24 @@
       renderCreatures();
       renderEquipmentAndBaits();
       initSimulationOptions();
+
+      // Ensure video background autoplays seamlessly
+      const video = document.getElementById('underwater-video');
+      if (video) {
+        video.muted = true;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            const unlock = () => {
+              video.play();
+              window.removeEventListener('click', unlock);
+              window.removeEventListener('touchstart', unlock);
+            };
+            window.addEventListener('click', unlock, { once: true });
+            window.addEventListener('touchstart', unlock, { once: true });
+          });
+        }
+      }
     });
   </script>
 </body>
