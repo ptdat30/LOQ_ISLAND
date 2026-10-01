@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bách Khoa Thư Hải Dương — LOQ Island Fishing Wiki</title>
-  <meta name="description" content="Hồ sơ giám định 84 loài sinh vật biển, cần câu, mồi câu và cẩm nang kinh tế biển sâu của mini-game câu cá LOQ Island. Thiết kế chuẩn AAA theo triết lý Apple & Linear.">
+  <title>Deep Sea Wiki — Bách Khoa Thư Hải Dương Kỹ Thuật Số</title>
+  <meta name="description" content="Khám phá 84 loài sinh vật biển, các tầng ngư trường kỳ bí, trang bị và công nghệ biển sâu trong thế giới LOQ Island. Trải nghiệm đồ họa 3D biển sâu chuẩn Apple & Subnautica.">
 
-  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <!-- Modern Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,32 +28,36 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            app: {
-              bg: '#0A0A0F',
-              surface: '#14141A',
-              hover: '#1A1A22',
-              card: '#14141A',
-              text: '#F5F5F7',
-              muted: '#8A8A94',
-              accent: '#5AC8FA',
+            ocean: {
+              void: '#010812',
+              navy: '#03111F',
+              deep: '#062A45',
+              cyan: '#00B8D9',
+              bio: '#22D3EE',
+              aqua: '#67E8F9',
+              white: '#F8FAFC',
+              muted: '#94A3B8',
+              card: 'rgba(6, 42, 69, 0.45)',
+              glass: 'rgba(3, 17, 31, 0.75)',
             },
             tier: {
-              1: '#6E6E78',
-              2: '#32D74B',
-              3: '#5AC8FA',
-              4: '#BF5AF2',
-              5: '#FF9F0A',
-              6: '#FF453A',
-              7: '#FFD60A',
+              1: '#00B8D9', // Cyan
+              2: '#38BDF8', // Ocean Blue
+              3: '#6366F1', // Indigo
+              4: '#A855F7', // Violet
+              5: '#EC4899', // Magenta
+              6: '#F43F5E', // Crimson
+              7: '#F59E0B', // Divine Amber
             }
           },
           boxShadow: {
-            innerHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.06)',
-            subtle: '0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
-            modal: '0 24px 48px -12px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+            'ocean-glow': '0 0 25px -5px rgba(34, 211, 238, 0.3)',
+            'ocean-card': '0 12px 32px -4px rgba(1, 8, 18, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+            'modal-3d': '0 24px 64px -12px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(103, 232, 249, 0.2)',
           }
         }
       }
@@ -61,27 +65,28 @@
   </script>
 
   <style>
-    /* AAA Design System Enforcements */
     :root {
-      --bg: #0A0A0F;
-      --surface: #14141A;
-      --surface-hover: #1A1A22;
-      --text-main: #F5F5F7;
-      --text-muted: #8A8A94;
-      --accent: #5AC8FA;
+      --ocean-void: #010812;
+      --ocean-navy: #03111F;
+      --ocean-deep: #062A45;
+      --ocean-cyan: #00B8D9;
+      --ocean-bio: #22D3EE;
+      --ocean-aqua: #67E8F9;
+      --ocean-white: #F8FAFC;
+      --ocean-muted: #94A3B8;
     }
 
     body {
-      background-color: #0A0A0F;
-      color: #F5F5F7;
+      background-color: var(--ocean-void);
+      color: var(--ocean-white);
       font-feature-settings: "tnum";
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
+      selection-background-color: rgba(34, 211, 238, 0.25);
     }
 
-    /* Ambient Background Three.js Canvas */
-    #ambient-canvas {
+    /* Fixed Underwater 3D Background Canvas */
+    #underwater-canvas {
       position: fixed;
       top: 0;
       left: 0;
@@ -89,35 +94,78 @@
       height: 100vh;
       z-index: 0;
       pointer-events: none;
-      opacity: 0.35;
     }
 
-    /* Tabular figures for all numeric and metric readouts */
+    /* Tabular numbers for all telemetry readouts */
     .tabular-numbers {
       font-feature-settings: "tnum";
       font-variant-numeric: tabular-nums;
     }
 
-    /* AAA Card Class */
-    .aaa-card {
-      background-color: #14141A;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
-    }
-    .aaa-card:hover {
-      border-color: rgba(255, 255, 255, 0.16);
-    }
-
-    /* Restrained Glassmorphism */
-    .aaa-glass {
-      background-color: rgba(10, 10, 15, 0.85);
+    /* Apple-Style Glass Surface */
+    .ocean-glass {
+      background: rgba(3, 17, 31, 0.75);
       backdrop-filter: blur(24px) saturate(180%);
       -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px -4px rgba(1, 8, 18, 0.6);
     }
 
-    /* Custom Scrollbars */
+    /* Underwater Card */
+    .ocean-card {
+      background: rgba(6, 42, 69, 0.35);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(34, 211, 238, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: all 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ocean-card:hover {
+      border-color: rgba(34, 211, 238, 0.35);
+      background: rgba(6, 42, 69, 0.6);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 16px 40px -8px rgba(0, 184, 217, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    /* Subtle Animated Ocean Glow Border */
+    .ocean-glow-border {
+      position: relative;
+    }
+    .ocean-glow-border::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.4), transparent 60%, rgba(0, 184, 217, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Caustic Light Overlay Effect */
+    .caustic-overlay {
+      background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Custom Minimal Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #010812;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #062A45;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00B8D9;
+    }
+
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -127,629 +175,732 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans selection:bg-[#5AC8FA]/20 selection:text-[#5AC8FA] relative">
-
-  <!-- Ambient Dark WebGL Background -->
-  <canvas id="ambient-canvas"></canvas>
+<body class="min-h-screen flex flex-col font-sans selection:bg-[#22D3EE]/20 selection:text-[#67E8F9] relative overflow-x-hidden">
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 1. STICKY TOP NAVIGATION BAR (TENSION LAYOUT)            -->
+  <!-- 0. FULL-SCREEN PROCEDURAL 3D UNDERWATER WEBGL BACKGROUND  -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <header class="sticky top-0 z-40 aaa-glass">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
+  <canvas id="underwater-canvas"></canvas>
+
+  <!-- ───────────────────────────────────────────────────────── -->
+  <!-- 1. MINIMAL FLOATING TOP NAVIGATION BAR (APPLE GLASSPRO)   -->
+  <!-- ───────────────────────────────────────────────────────── -->
+  <header id="main-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-3 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto h-12 ocean-glass rounded-full px-4 sm:px-6 flex items-center justify-between gap-4">
       
-      <!-- Left: Brand Title & Wiki Pill -->
-      <div class="flex items-center gap-3 shrink-0">
-        <a href="#" class="flex items-center gap-2 group">
-          <div class="w-7 h-7 rounded-[8px] bg-[#14141A] border border-white/[0.08] flex items-center justify-center text-[#5AC8FA] shadow-inner group-hover:border-[#5AC8FA]/40 transition-colors">
-            <i data-lucide="compass" class="w-4 h-4 stroke-[1.5]"></i>
-          </div>
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-[14px] font-semibold tracking-tight text-[#F5F5F7] group-hover:text-white transition-colors">
-              LOQ Island
-            </span>
-            <span class="text-[10px] uppercase font-medium tracking-wider px-1.5 py-0.2 rounded-[4px] bg-white/[0.06] border border-white/[0.08] text-[#8A8A94]">
-              Wiki
-            </span>
-          </div>
-        </a>
-      </div>
+      <!-- Brand Logo & Facility Identity -->
+      <a href="#hero" class="flex items-center gap-2.5 group shrink-0">
+        <div class="w-7 h-7 rounded-full bg-[#062A45] border border-[#22D3EE]/40 flex items-center justify-center text-[#22D3EE] group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(34,211,238,0.5)] transition-all">
+          <i data-lucide="compass" class="w-4 h-4 stroke-[1.5]"></i>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-[14px] font-bold tracking-tight text-[#F8FAFC] group-hover:text-[#67E8F9] transition-colors">
+            DEEP SEA WIKI
+          </span>
+          <span class="text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.2 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE]">
+            V1.0
+          </span>
+        </div>
+      </a>
 
-      <!-- Center: Navigation Tabs (Pill Group) -->
-      <nav class="hidden md:flex items-center gap-1 bg-[#14141A] p-0.5 rounded-[10px] border border-white/[0.06]">
-        <button onclick="switchTab('fishes')" id="tab-fishes" class="px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer bg-white/[0.1] text-[#F5F5F7] shadow-sm">
-          Sinh vật biển (84)
-        </button>
-        <button onclick="switchTab('equipment')" id="tab-equipment" class="px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer text-[#8A8A94] hover:text-[#F5F5F7]">
-          Cần câu & Trang bị
-        </button>
-        <button onclick="switchTab('baits')" id="tab-baits" class="px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer text-[#8A8A94] hover:text-[#F5F5F7]">
-          Mồi câu & Thủy quái
-        </button>
-        <button onclick="switchTab('skills')" id="tab-skills" class="px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer text-[#8A8A94] hover:text-[#F5F5F7]">
-          Kỹ năng cốt lõi
-        </button>
-        <button onclick="switchTab('rates')" id="tab-rates" class="px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer text-[#8A8A94] hover:text-[#F5F5F7]">
-          Tỉ lệ & Định giá
-        </button>
+      <!-- Center Navigation Links -->
+      <nav class="hidden md:flex items-center gap-1 text-[13px] font-medium text-[#94A3B8]">
+        <a href="#hero" class="px-3 py-1 rounded-full hover:text-[#F8FAFC] hover:bg-white/[0.05] transition-all">Tổng quan</a>
+        <a href="#database" class="px-3 py-1 rounded-full text-[#F8FAFC] bg-white/[0.08] hover:text-[#22D3EE] transition-all">Sinh vật (84)</a>
+        <a href="#worlds" class="px-3 py-1 rounded-full hover:text-[#F8FAFC] hover:bg-white/[0.05] transition-all">Ngư trường</a>
+        <a href="#equipment" class="px-3 py-1 rounded-full hover:text-[#F8FAFC] hover:bg-white/[0.05] transition-all">Cần câu & Tàu</a>
+        <a href="#calculator" class="px-3 py-1 rounded-full hover:text-[#F8FAFC] hover:bg-white/[0.05] transition-all">Kinh tế & Tỉ lệ</a>
       </nav>
 
-      <!-- Right: Search Input & GitHub Link -->
+      <!-- Right: Search Pill & Audio Sensor & GitHub -->
       <div class="flex items-center gap-2 shrink-0">
-        <!-- Quick Search Pill -->
-        <div class="relative hidden sm:block w-48 lg:w-60">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-[#8A8A94] absolute left-2.5 top-1/2 -translate-y-1/2 stroke-[1.5]"></i>
-          <input 
-            type="text" 
-            id="navSearchInput"
-            placeholder="Tìm kiếm loài cá..." 
-            class="w-full bg-[#14141A] border border-white/[0.08] rounded-[10px] pl-8 pr-7 py-1 text-[12px] text-[#F5F5F7] placeholder-[#8A8A94] focus:outline-none focus:border-[#5AC8FA]/50 transition-colors"
-          />
-          <kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-[#8A8A94] bg-white/[0.06] px-1 py-0.2 rounded border border-white/[0.06] pointer-events-none">
-            /
-          </kbd>
-        </div>
+        <!-- Interactive Search Bar Trigger -->
+        <button onclick="focusSearch()" class="h-8 px-3 rounded-full bg-[#062A45]/80 hover:bg-[#062A45] border border-[#22D3EE]/20 hover:border-[#22D3EE]/50 text-[12px] text-[#94A3B8] hover:text-[#F8FAFC] inline-flex items-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-[#22D3EE] stroke-[1.5]"></i>
+          <span class="hidden sm:inline">Tìm sinh vật...</span>
+          <kbd class="text-[9px] font-mono bg-black/40 px-1.5 py-0.5 rounded border border-white/10 text-[#67E8F9]">⌘K</kbd>
+        </button>
+
+        <!-- Sonar Audio Indicator (Ambient ocean toggle) -->
+        <button id="audio-toggle" onclick="toggleSonarAudio()" class="w-8 h-8 rounded-full bg-[#062A45]/80 hover:bg-[#062A45] border border-[#22D3EE]/20 text-[#94A3B8] hover:text-[#22D3EE] flex items-center justify-center transition-all cursor-pointer" title="Bật/Tắt âm thanh Sonar">
+          <i data-lucide="volume-x" id="audio-icon" class="w-4 h-4 stroke-[1.5]"></i>
+        </button>
 
         <!-- GitHub Repo Button -->
-        <a 
-          href="https://github.com/ptdat30/LOQ_ISLAND" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="h-8 px-2.5 rounded-[10px] bg-[#14141A] hover:bg-[#1A1A22] border border-white/[0.06] text-[12px] font-medium text-[#F5F5F7] inline-flex items-center gap-1.5 transition-colors"
-          title="Mở mã nguồn GitHub"
-        >
-          <i data-lucide="github" class="w-3.5 h-3.5 stroke-[1.5]"></i>
-          <span class="hidden sm:inline">GitHub</span>
+        <a href="https://github.com/ptdat30/LOQ_ISLAND" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-[#062A45]/80 hover:bg-[#062A45] border border-[#22D3EE]/20 text-[#94A3B8] hover:text-[#F8FAFC] flex items-center justify-center transition-all" title="Mã nguồn GitHub">
+          <i data-lucide="github" class="w-4 h-4 stroke-[1.5]"></i>
         </a>
       </div>
+
     </div>
   </header>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 2. HERO INTRO (TENSION LAYOUT)                           -->
+  <!-- 2. HERO SECTION: 100VH CINEMATIC UNDERWATER DIVE          -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <section class="relative z-10 border-b border-white/[0.06] py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+  <section id="hero" class="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4 sm:px-8 z-10 caustic-overlay">
+    <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Left Column: Title, Subtitle, Telemetry Metrics & CTAs (7 Cols) -->
+      <div class="lg:col-span-7 flex flex-col items-start space-y-6">
         
-        <!-- Left: Title & Purpose -->
-        <div class="max-w-xl">
-          <div class="inline-flex items-center gap-2 mb-2">
-            <span class="text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5 rounded-[6px] bg-[#5AC8FA]/10 border border-[#5AC8FA]/20 text-[#5AC8FA]">
-              Bách Khoa Thư Hải Dương
+        <!-- Marine Research Facility Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#062A45]/70 border border-[#22D3EE]/30 text-[11px] font-mono text-[#67E8F9] shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+          <span class="w-2 h-2 rounded-full bg-[#22D3EE] animate-pulse"></span>
+          <span>OCEANOGRAPHIC RESEARCH FACILITY • DEPTH: 0m</span>
+        </div>
+
+        <!-- Huge Apple-Style Title -->
+        <div class="space-y-1">
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#F8FAFC] leading-[1.08]">
+            THE DEEP <br>
+            <span class="bg-gradient-to-r from-[#22D3EE] via-[#00B8D9] to-[#67E8F9] bg-clip-text text-transparent">
+              OCEAN WIKI
             </span>
-            <span class="text-[11px] text-[#8A8A94]">Phiên bản Game 1.0</span>
-          </div>
-          <h1 class="text-[28px] font-bold tracking-tight text-[#F5F5F7] leading-tight">
-            Tài Liệu Toàn Diện Mini-Game Câu Cá
           </h1>
-          <p class="text-[14px] text-[#8A8A94] mt-1.5 leading-relaxed">
-            Hồ sơ sinh vật biển 84 loài phân cấp từ Phổ Thông đến Boss Độc Tôn, hệ số ngư trường, thông số cần câu và công thức định giá tự động.
+          <p class="text-[16px] sm:text-[18px] text-[#94A3B8] font-light max-w-xl leading-relaxed pt-2">
+            Khám phá 84 loài sinh vật biển sâu, hệ sinh thái ngư trường đảo LOQ, thông số cần câu và công thức định giá tự động.
           </p>
         </div>
 
-        <!-- Right: Tabular Summary Metrics -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
-          <div class="aaa-card p-3 rounded-[12px] text-left min-w-[110px]">
-            <span class="text-[10px] text-[#8A8A94] uppercase tracking-wider block">Sinh vật</span>
-            <span class="text-[17px] font-semibold text-[#F5F5F7] tabular-numbers mt-0.5 block">84 Loài</span>
+        <!-- Futuristic Search Input -->
+        <div class="w-full max-w-lg relative group">
+          <div class="absolute -inset-0.5 bg-gradient-to-r from-[#22D3EE] to-[#00B8D9] rounded-2xl opacity-30 group-focus-within:opacity-80 blur transition duration-300"></div>
+          <div class="relative flex items-center bg-[#03111F]/90 border border-[#22D3EE]/30 rounded-2xl p-1.5 shadow-2xl">
+            <i data-lucide="search" class="w-5 h-5 text-[#22D3EE] ml-3 mr-2 shrink-0 stroke-[1.5]"></i>
+            <input 
+              type="text" 
+              id="heroSearchInput"
+              placeholder="Tìm kiếm theo tên cá, thế giới, cấp Tier..." 
+              class="w-full bg-transparent text-[14px] text-[#F8FAFC] placeholder-[#94A3B8]/70 focus:outline-none py-2 px-1"
+            />
+            <button onclick="executeHeroSearch()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00B8D9] to-[#22D3EE] text-[#010812] text-[12px] font-bold uppercase tracking-wider hover:opacity-95 transition-all shadow-[0_0_15px_rgba(34,211,238,0.4)] shrink-0 cursor-pointer">
+              Khám Phá
+            </button>
           </div>
-          <div class="aaa-card p-3 rounded-[12px] text-left min-w-[110px]">
-            <span class="text-[10px] text-[#8A8A94] uppercase tracking-wider block">Ngư trường</span>
-            <span class="text-[17px] font-semibold text-[#5AC8FA] tabular-numbers mt-0.5 block">3 Thế giới</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a href="#database" class="px-6 py-3 rounded-full bg-white/[0.08] hover:bg-[#22D3EE]/20 border border-[#22D3EE]/40 hover:border-[#22D3EE] text-[#F8FAFC] hover:text-[#67E8F9] text-[13px] font-semibold inline-flex items-center gap-2 transition-all shadow-[0_4px_20px_rgba(34,211,238,0.15)] group">
+            <span>Duyệt 84 Tiêu Bản</span>
+            <i data-lucide="arrow-down" class="w-4 h-4 text-[#22D3EE] group-hover:translate-y-0.5 transition-transform stroke-[1.5]"></i>
+          </a>
+          <a href="#worlds" class="px-6 py-3 rounded-full bg-transparent hover:bg-white/[0.04] border border-white/10 hover:border-white/20 text-[#94A3B8] hover:text-white text-[13px] font-medium inline-flex items-center gap-2 transition-all">
+            <i data-lucide="map-pin" class="w-4 h-4 text-[#00B8D9] stroke-[1.5]"></i>
+            <span>3 Tầng Ngư Trường</span>
+          </a>
+        </div>
+
+        <!-- High-End Tabular Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-xl pt-4 border-t border-white/[0.08]">
+          <div class="ocean-card p-3 rounded-2xl">
+            <span class="text-[10px] font-mono text-[#94A3B8] uppercase tracking-wider block">Mẫu giám định</span>
+            <span class="text-[18px] font-bold text-[#F8FAFC] tabular-numbers block mt-0.5">84 Loài</span>
           </div>
-          <div class="aaa-card p-3 rounded-[12px] text-left min-w-[110px]">
-            <span class="text-[10px] text-[#8A8A94] uppercase tracking-wider block">Cần câu</span>
-            <span class="text-[17px] font-semibold text-[#BF5AF2] tabular-numbers mt-0.5 block">6 Cấp độ</span>
+          <div class="ocean-card p-3 rounded-2xl">
+            <span class="text-[10px] font-mono text-[#94A3B8] uppercase tracking-wider block">Độ sâu sinh thái</span>
+            <span class="text-[18px] font-bold text-[#22D3EE] tabular-numbers block mt-0.5">3 Tầng Vực</span>
           </div>
-          <div class="aaa-card p-3 rounded-[12px] text-left min-w-[110px]">
-            <span class="text-[10px] text-[#8A8A94] uppercase tracking-wider block">Giá Max Boss</span>
-            <span class="text-[17px] font-semibold text-[#FFD60A] tabular-numbers mt-0.5 block">500.000g</span>
+          <div class="ocean-card p-3 rounded-2xl">
+            <span class="text-[10px] font-mono text-[#94A3B8] uppercase tracking-wider block">Trang bị cần</span>
+            <span class="text-[18px] font-bold text-[#67E8F9] tabular-numbers block mt-0.5">6 Bậc Cần</span>
+          </div>
+          <div class="ocean-card p-3 rounded-2xl">
+            <span class="text-[10px] font-mono text-[#94A3B8] uppercase tracking-wider block">Kỷ lục Boss</span>
+            <span class="text-[18px] font-bold text-[#F59E0B] tabular-numbers block mt-0.5">500.000g</span>
           </div>
         </div>
 
       </div>
+
+      <!-- Right Column: Interactive 3D Creature Showcase (5 Cols) -->
+      <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
+        <!-- Floating Glass Hologram Frame -->
+        <div class="relative w-full aspect-square max-w-[480px] rounded-3xl ocean-glass p-3 ocean-glow-border overflow-hidden group">
+          
+          <!-- Embedded Three.js 3D Creature Viewport -->
+          <canvas id="hero-creature-canvas" class="w-full h-full rounded-2xl cursor-grab active:cursor-grabbing"></canvas>
+
+          <!-- Top-Left Telemetry Tag -->
+          <div class="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#22D3EE]/30 text-[10px] font-mono text-[#67E8F9]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#22D3EE] animate-ping"></span>
+            <span>SPECIMEN: MANTA BIOLUMINESCENCE</span>
+          </div>
+
+          <!-- Bottom Floating Specs -->
+          <div class="absolute bottom-4 left-4 right-4 z-10 p-3 rounded-xl bg-[#03111F]/80 backdrop-blur-md border border-white/10 flex items-center justify-between text-[11px]">
+            <div>
+              <span class="text-[#94A3B8] block text-[9px] font-mono uppercase">Trạng thái bơi</span>
+              <span class="text-[#22D3EE] font-semibold">Tự động uốn vây tự nhiên</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[#94A3B8] block text-[9px] font-mono uppercase">Tương tác</span>
+              <span class="text-[#F8FAFC]">Kéo chuột xoay 3D</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 3. BIOME QUICK BAR (3 NGƯ TRƯỜNG CHÍNH)                  -->
+  <!-- 3. CREATURE DATABASE SECTION: 84 CINEMATIC COLLECTIBLES   -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <section class="relative z-10 py-5 border-b border-white/[0.06]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between mb-3 text-[12px]">
-        <span class="font-medium text-[#F5F5F7] flex items-center gap-1.5">
-          <i data-lucide="map" class="w-3.5 h-3.5 text-[#5AC8FA] stroke-[1.5]"></i>
-          Ngư trường sinh thái đảo
+  <section id="database" class="relative z-10 py-16 px-4 sm:px-8 border-t border-white/[0.08]">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- Section Header (Tension Layout) -->
+      <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-8">
+        <div>
+          <div class="inline-flex items-center gap-2 mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE]">
+              Hồ Sơ Giám Định Sinh Học
+            </span>
+            <span class="text-[11px] text-[#94A3B8]">Cập nhật liên tục</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8FAFC]">
+            DISCOVER THE CREATURES
+          </h2>
+          <p class="text-[14px] text-[#94A3B8] mt-1 max-w-xl">
+            84 loài sinh vật biển sâu được phân loại nghiêm ngặt theo 7 cấp bậc độ hiếm và 3 tầng ngư trường tiến hóa.
+          </p>
+        </div>
+
+        <!-- Real-time Species Count Tag -->
+        <div class="ocean-glass px-4 py-2 rounded-2xl flex items-center gap-3">
+          <i data-lucide="layers" class="w-4 h-4 text-[#22D3EE] stroke-[1.5]"></i>
+          <div>
+            <span class="text-[10px] font-mono uppercase text-[#94A3B8] block">Mẫu hiển thị</span>
+            <span id="creature-count-badge" class="text-[14px] font-bold text-[#F8FAFC] tabular-numbers">84 / 84 Loài</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Futuristic Filtering Console -->
+      <div class="ocean-glass p-3.5 rounded-2xl mb-8 space-y-3">
+        
+        <!-- Upper Row: Biome Selectors & Tier Pills -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          
+          <!-- Biome Selector Tabs -->
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/5 overflow-x-auto no-scrollbar">
+            <button onclick="setWorldFilter(0)" id="world-btn-0" class="world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer bg-[#22D3EE] text-[#010812] shadow-sm">
+              Tất cả Thế giới
+            </button>
+            <button onclick="setWorldFilter(1)" id="world-btn-1" class="world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#94A3B8] hover:text-[#F8FAFC] transition-all cursor-pointer">
+              W1 Ao Hồ & Đại Dương
+            </button>
+            <button onclick="setWorldFilter(2)" id="world-btn-2" class="world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#94A3B8] hover:text-[#F8FAFC] transition-all cursor-pointer">
+              W2 Vực Phóng Xạ
+            </button>
+            <button onclick="setWorldFilter(3)" id="world-btn-3" class="world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#94A3B8] hover:text-[#F8FAFC] transition-all cursor-pointer">
+              W3 Kỷ Jura Tiền Sử
+            </button>
+          </div>
+
+          <!-- Sorting Dropdown -->
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-[#94A3B8] hidden sm:inline">Sắp xếp:</span>
+            <select 
+              id="creatureSortSelect" 
+              onchange="renderCreatures()" 
+              class="bg-[#03111F] border border-[#22D3EE]/20 rounded-xl px-3 py-1.5 text-[12px] text-[#F8FAFC] focus:outline-none focus:border-[#22D3EE] cursor-pointer"
+            >
+              <option value="default">Mặc định (ID)</option>
+              <option value="tierDesc">Tier cao nhất ↓</option>
+              <option value="priceDesc">Giá bán cao nhất ↓</option>
+              <option value="sizeDesc">Khối lượng tối đa ↓</option>
+              <option value="nameAsc">Tên loài A → Z</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Lower Row: 7 Tier Pills & Quick Reset -->
+        <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/5 overflow-x-auto no-scrollbar">
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="setTierFilter(0)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/10 text-white cursor-pointer">
+              Tất cả Tier
+            </button>
+            <button onclick="setTierFilter(1)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#00B8D9]/10 text-[#00B8D9] border border-[#00B8D9]/20 hover:bg-[#00B8D9]/20 cursor-pointer">
+              T1 Phổ thông
+            </button>
+            <button onclick="setTierFilter(2)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20 hover:bg-[#38BDF8]/20 cursor-pointer">
+              T2 Hiếm
+            </button>
+            <button onclick="setTierFilter(3)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#6366F1]/10 text-[#6366F1] border border-[#6366F1]/20 hover:bg-[#6366F1]/20 cursor-pointer">
+              T3 Đặc sắc
+            </button>
+            <button onclick="setTierFilter(4)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/20 hover:bg-[#A855F7]/20 cursor-pointer">
+              T4 Sử thi
+            </button>
+            <button onclick="setTierFilter(5)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#EC4899]/10 text-[#EC4899] border border-[#EC4899]/20 hover:bg-[#EC4899]/20 cursor-pointer">
+              T5 Huyền thoại
+            </button>
+            <button onclick="setTierFilter(6)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#F43F5E]/10 text-[#F43F5E] border border-[#F43F5E]/20 hover:bg-[#F43F5E]/20 cursor-pointer">
+              T6 Thần thoại
+            </button>
+            <button onclick="setTierFilter(7)" class="tier-pill-btn px-2.5 py-1 rounded-lg text-[11px] font-medium bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 hover:bg-[#F59E0B]/25 cursor-pointer">
+              T7 Boss Độc Tôn
+            </button>
+          </div>
+
+          <button onclick="resetAllFilters()" class="text-[11px] font-medium text-[#22D3EE] hover:underline cursor-pointer px-2 shrink-0">
+            Đặt lại bộ lọc
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Responsive Creatures Grid -->
+      <div id="creatures-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────── -->
+  <!-- 4. EXPLORE WORLDS & ECOSYSTEM ZONES                       -->
+  <!-- ───────────────────────────────────────────────────────── -->
+  <section id="worlds" class="relative z-10 py-16 px-4 sm:px-8 border-t border-white/[0.08]">
+    <div class="max-w-7xl mx-auto">
+      
+      <div class="mb-8">
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE] mb-2 inline-block">
+          Các Tầng Vực Sinh Thái
         </span>
-        <span class="text-[#8A8A94]">Click chọn ngư trường để lọc nhanh</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8FAFC]">
+          EXPLORE THE UNDERWATER WORLDS
+        </h2>
+        <p class="text-[14px] text-[#94A3B8] mt-1 max-w-xl">
+          Mỗi thế giới sở hữu khí hậu thủy văn riêng biệt, loài thủy quái thống trị và hệ số nhân doanh thu đặc thù.
+        </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <!-- Biome 1 -->
-        <div onclick="setWorldFilter(1)" id="biome-card-1" class="aaa-card p-3.5 rounded-[12px] cursor-pointer flex flex-col justify-between group active:scale-[0.98]">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-[10px] font-medium px-2 py-0.5 rounded-[6px] bg-[#5AC8FA]/10 text-[#5AC8FA] border border-[#5AC8FA]/20">
-                World 1
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- World 1 Card -->
+        <div onclick="setWorldFilter(1); document.getElementById('database').scrollIntoView({ behavior: 'smooth' });" class="ocean-card rounded-3xl p-6 flex flex-col justify-between cursor-pointer group relative overflow-hidden">
+          <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-[#00B8D9]/10 rounded-full blur-2xl group-hover:bg-[#00B8D9]/25 transition-all"></div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-mono px-3 py-1 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE]">
+                WORLD 01 • DEPTH 0 - 200m
               </span>
-              <h3 class="text-[14px] font-semibold text-[#F5F5F7] mt-2 group-hover:text-[#5AC8FA] transition-colors">
-                Ao Hồ & Vịnh Biển
-              </h3>
-              <p class="text-[12px] text-[#8A8A94] mt-0.5">
-                Cá biển nhiệt đới & thủy quái truyền thuyết cổ xưa
-              </p>
+              <span class="text-[12px] font-mono text-[#22D3EE] font-bold tabular-numbers">×1.0 MULTIPLIER</span>
             </div>
-            <div class="w-8 h-8 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[#5AC8FA] shrink-0">
-              <i data-lucide="waves" class="w-4 h-4 stroke-[1.5]"></i>
-            </div>
+            <h3 class="text-2xl font-bold text-[#F8FAFC] group-hover:text-[#67E8F9] transition-colors mb-2">
+              Ao Hồ & Đại Dương
+            </h3>
+            <p class="text-[13px] text-[#94A3B8] leading-relaxed mb-6">
+              Môi trường biển nhiệt đới tươi sáng, nơi tôn vinh 28 loài cá tự nhiên từ ao làng quen thuộc đến biển khơi bao la và các thủy quái truyền thuyết cổ xưa như Leviathan & Kraken.
+            </p>
           </div>
-          <div class="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-[#8A8A94]">
-            <span>28 Loài sinh vật</span>
-            <span class="text-[#5AC8FA] font-medium tabular-numbers">Hệ số: ×1.0</span>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between text-[12px]">
+            <span class="text-[#94A3B8]">28 Loài giám định</span>
+            <span class="text-[#22D3EE] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 font-semibold">
+              Xem sinh vật <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
           </div>
         </div>
 
-        <!-- Biome 2 -->
-        <div onclick="setWorldFilter(2)" id="biome-card-2" class="aaa-card p-3.5 rounded-[12px] cursor-pointer flex flex-col justify-between group active:scale-[0.98]">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-[10px] font-medium px-2 py-0.5 rounded-[6px] bg-[#32D74B]/10 text-[#32D74B] border border-[#32D74B]/20">
-                World 2
+        <!-- World 2 Card -->
+        <div onclick="setWorldFilter(2); document.getElementById('database').scrollIntoView({ behavior: 'smooth' });" class="ocean-card rounded-3xl p-6 flex flex-col justify-between cursor-pointer group relative overflow-hidden border-[#10B981]/30">
+          <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-[#10B981]/15 rounded-full blur-2xl group-hover:bg-[#10B981]/30 transition-all"></div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-mono px-3 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-[#34D399]">
+                WORLD 02 • DEPTH 1,000m
               </span>
-              <h3 class="text-[14px] font-semibold text-[#F5F5F7] mt-2 group-hover:text-[#32D74B] transition-colors">
-                Vùng Nước Phóng Xạ
-              </h3>
-              <p class="text-[12px] text-[#8A8A94] mt-0.5">
-                Cá đột biến gen, phát quang sinh học & Gojira-Fish
-              </p>
+              <span class="text-[12px] font-mono text-[#34D399] font-bold tabular-numbers">×3.0 MULTIPLIER</span>
             </div>
-            <div class="w-8 h-8 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[#32D74B] shrink-0">
-              <i data-lucide="biohazard" class="w-4 h-4 stroke-[1.5]"></i>
-            </div>
+            <h3 class="text-2xl font-bold text-[#F8FAFC] group-hover:text-[#34D399] transition-colors mb-2">
+              Vực Phóng Xạ
+            </h3>
+            <p class="text-[13px] text-[#94A3B8] leading-relaxed mb-6">
+              Vực thẳm nhiễm bức xạ Plutonium cực mạnh. Nơi sinh vật bị biến đổi gen thành các dị nhân sinh học phát quang, cá hai đầu và bạo chúa hạt nhân Gojira-Fish.
+            </p>
           </div>
-          <div class="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-[#8A8A94]">
-            <span>28 Loài sinh vật</span>
-            <span class="text-[#32D74B] font-medium tabular-numbers">Hệ số: ×3.0</span>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between text-[12px]">
+            <span class="text-[#94A3B8]">28 Loài sinh học dị biến</span>
+            <span class="text-[#34D399] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 font-semibold">
+              Xem sinh vật <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
           </div>
         </div>
 
-        <!-- Biome 3 -->
-        <div onclick="setWorldFilter(3)" id="biome-card-3" class="aaa-card p-3.5 rounded-[12px] cursor-pointer flex flex-col justify-between group active:scale-[0.98]">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-[10px] font-medium px-2 py-0.5 rounded-[6px] bg-[#FF9F0A]/10 text-[#FF9F0A] border border-[#FF9F0A]/20">
-                World 3
+        <!-- World 3 Card -->
+        <div onclick="setWorldFilter(3); document.getElementById('database').scrollIntoView({ behavior: 'smooth' });" class="ocean-card rounded-3xl p-6 flex flex-col justify-between cursor-pointer group relative overflow-hidden border-[#F59E0B]/30">
+          <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-[#F59E0B]/15 rounded-full blur-2xl group-hover:bg-[#F59E0B]/30 transition-all"></div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-mono px-3 py-1 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#FBBF24]">
+                WORLD 03 • ANCIENT JURASSIC
               </span>
-              <h3 class="text-[14px] font-semibold text-[#F5F5F7] mt-2 group-hover:text-[#FF9F0A] transition-colors">
-                Kỷ Jura Tiền Sử
-              </h3>
-              <p class="text-[12px] text-[#8A8A94] mt-0.5">
-                Bò sát biển cổ đại, Mosasaurus & Chúa tể Megalodon
-              </p>
+              <span class="text-[12px] font-mono text-[#FBBF24] font-bold tabular-numbers">×10.0 MULTIPLIER</span>
             </div>
-            <div class="w-8 h-8 rounded-[8px] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[#FF9F0A] shrink-0">
-              <i data-lucide="history" class="w-4 h-4 stroke-[1.5]"></i>
-            </div>
+            <h3 class="text-2xl font-bold text-[#F8FAFC] group-hover:text-[#FBBF24] transition-colors mb-2">
+              Kỷ Jura Tiền Sử
+            </h3>
+            <p class="text-[13px] text-[#94A3B8] leading-relaxed mb-6">
+              Rãnh vực biển cổ sinh hàng trăm triệu năm trước. Nơi thống trị của quái thú bọc thép Dunkleosteus, ngư long Mosasaurus và siêu cá mập Megalodon thần thoại.
+            </p>
           </div>
-          <div class="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-[#8A8A94]">
-            <span>28 Loài sinh vật</span>
-            <span class="text-[#FF9F0A] font-medium tabular-numbers">Hệ số: ×10.0</span>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between text-[12px]">
+            <span class="text-[#94A3B8]">28 Loài cổ sinh</span>
+            <span class="text-[#FBBF24] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1 font-semibold">
+              Xem sinh vật <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
           </div>
         </div>
+
       </div>
     </div>
   </section>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 4. MAIN CONTENT TABS                                     -->
+  <!-- 5. TIER HIERARCHY & DROP PROBABILITIES                    -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <main class="relative z-10 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- TAB 1: FISHES (THƯ VIỆN 84 LOÀI SINH VẬT)               -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div id="view-fishes" class="space-y-4">
+  <section id="tiers" class="relative z-10 py-16 px-4 sm:px-8 border-t border-white/[0.08]">
+    <div class="max-w-7xl mx-auto">
       
-      <!-- Filter Bar (Tension Layout) -->
-      <div class="aaa-card p-3 rounded-[16px] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <!-- Left: Tier Filter Pills -->
-        <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-          <button onclick="setTierFilter(0)" class="tier-filter-btn px-2.5 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.1] text-[#F5F5F7] cursor-pointer">
-            Tất cả Tier
-          </button>
-          <button onclick="setTierFilter(1)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T1 Phổ thông
-          </button>
-          <button onclick="setTierFilter(2)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T2 Hiếm
-          </button>
-          <button onclick="setTierFilter(3)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T3 Đặc sắc
-          </button>
-          <button onclick="setTierFilter(4)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T4 Sử thi
-          </button>
-          <button onclick="setTierFilter(5)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T5 Huyền thoại
-          </button>
-          <button onclick="setTierFilter(6)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T6 Thần thoại
-          </button>
-          <button onclick="setTierFilter(7)" class="tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer">
-            T7 Boss
-          </button>
-        </div>
-
-        <!-- Right: Sort & Results Counter -->
-        <div class="flex items-center gap-2 shrink-0">
-          <select 
-            id="fishSortSelect" 
-            onchange="renderFishes()" 
-            class="bg-[#14141A] border border-white/[0.08] rounded-[10px] px-2.5 py-1 text-[11px] text-[#F5F5F7] focus:outline-none cursor-pointer"
-          >
-            <option value="default">Mặc định</option>
-            <option value="tierDesc">Tier cao nhất</option>
-            <option value="priceDesc">Giá bán cao nhất</option>
-            <option value="sizeDesc">Kích thước lớn nhất</option>
-            <option value="nameAsc">Tên A → Z</option>
-          </select>
-
-          <span id="resultsCounter" class="text-[11px] text-[#8A8A94] tabular-numbers px-2">
-            Đang tải dữ liệu...
-          </span>
-
-          <button onclick="resetFilters()" class="text-[11px] font-medium text-[#5AC8FA] hover:underline cursor-pointer px-1">
-            Đặt lại
-          </button>
-        </div>
+      <div class="mb-8">
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE] mb-2 inline-block">
+          Hệ Thống Phân Cấp Rarity
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8FAFC]">
+          7-TIER RARITY ARCHITECTURE
+        </h2>
+        <p class="text-[14px] text-[#94A3B8] mt-1 max-w-xl">
+          Tỉ lệ cắn câu cơ bản chuẩn toán học, bảo toàn tính cân bằng và giá trị sưu tập báu vật biển sâu.
+        </p>
       </div>
 
-      <!-- Fish Grid (Responsive 2 to 6 columns) -->
-      <div id="fishGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-        <!-- Rendered by JS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        
+        <!-- T1 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#00B8D9]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#00B8D9] block">TIER 01</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Phổ Thông</h4>
+            <span class="text-[20px] font-bold text-[#00B8D9] font-mono mt-2 block tabular-numbers">70.0%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">10 vàng</span>
+          </div>
+        </div>
+
+        <!-- T2 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#38BDF8]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#38BDF8] block">TIER 02</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Hiếm</h4>
+            <span class="text-[20px] font-bold text-[#38BDF8] font-mono mt-2 block tabular-numbers">22.0%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">50 vàng (5x)</span>
+          </div>
+        </div>
+
+        <!-- T3 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#6366F1]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#6366F1] block">TIER 03</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Đặc Sắc</h4>
+            <span class="text-[20px] font-bold text-[#6366F1] font-mono mt-2 block tabular-numbers">6.0%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">250 vàng (25x)</span>
+          </div>
+        </div>
+
+        <!-- T4 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#A855F7]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#A855F7] block">TIER 04</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Sử Thi</h4>
+            <span class="text-[20px] font-bold text-[#A855F7] font-mono mt-2 block tabular-numbers">1.5%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">1.500 vàng</span>
+          </div>
+        </div>
+
+        <!-- T5 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#EC4899]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#EC4899] block">TIER 05</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Huyền Thoại</h4>
+            <span class="text-[20px] font-bold text-[#EC4899] font-mono mt-2 block tabular-numbers">0.4%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">10.000 vàng</span>
+          </div>
+        </div>
+
+        <!-- T6 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#F43F5E]/20">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#F43F5E] block">TIER 06</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Thần Thoại</h4>
+            <span class="text-[20px] font-bold text-[#F43F5E] font-mono mt-2 block tabular-numbers">0.09%</span>
+          </div>
+          <div class="pt-3 border-t border-white/5 text-[11px] text-[#94A3B8]">
+            <span>Giá cơ sở: </span>
+            <span class="text-[#F59E0B] font-semibold tabular-numbers">75.000 vàng</span>
+          </div>
+        </div>
+
+        <!-- T7 -->
+        <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between border-[#F59E0B]/40 bg-[#F59E0B]/5">
+          <div>
+            <span class="text-[10px] font-mono font-bold text-[#F59E0B] block">TIER 07</span>
+            <h4 class="text-[15px] font-bold text-[#F8FAFC] mt-0.5">Boss Độc Tôn</h4>
+            <span class="text-[20px] font-bold text-[#F59E0B] font-mono mt-2 block tabular-numbers">0.01%</span>
+          </div>
+          <div class="pt-3 border-t border-[#F59E0B]/20 text-[11px] text-[#F59E0B]">
+            <span>Giá cơ sở: </span>
+            <span class="font-bold tabular-numbers">500.000 vàng</span>
+          </div>
+        </div>
+
       </div>
     </div>
+  </section>
 
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- TAB 2: EQUIPMENT (CẦN CÂU & PHƯƠNG TIỆN)                 -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div id="view-equipment" class="space-y-6 hidden">
-      <div>
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7]">Danh Sách Cần Câu</h2>
-        <p class="text-[12px] text-[#8A8A94]">Nâng cấp cần câu để mở khóa thế giới mới và tăng bội số giá bán cá</p>
+  <!-- ───────────────────────────────────────────────────────── -->
+  <!-- 6. EQUIPMENT & EXPLORATION SUBMERSIBLES                    -->
+  <!-- ───────────────────────────────────────────────────────── -->
+  <section id="equipment" class="relative z-10 py-16 px-4 sm:px-8 border-t border-white/[0.08]">
+    <div class="max-w-7xl mx-auto">
+      
+      <div class="mb-8">
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE] mb-2 inline-block">
+          Khí Tài Khai Thác Biển Sâu
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8FAFC]">
+          RODS & SUBMERSIBLES
+        </h2>
+        <p class="text-[14px] text-[#94A3B8] mt-1 max-w-xl">
+          Nâng cấp cần câu để mở khóa các tầng ngư trường sâu hơn và kích hoạt bội số doanh thu khổng lồ.
+        </p>
       </div>
 
-      <div id="rodsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <!-- Rods Grid -->
+      <div id="rods-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
         <!-- Rendered by JS -->
       </div>
 
-      <div class="pt-4 border-t border-white/[0.06]">
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7] mb-1">Phương Tiện Thám Hiểm</h2>
-        <p class="text-[12px] text-[#8A8A94] mb-3">Tàu cá và phương tiện di chuyển trên biển</p>
-        <div id="vehiclesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <!-- Baits & Awakening Section -->
+      <div class="pt-6 border-t border-white/10">
+        <h3 class="text-2xl font-bold text-[#F8FAFC] mb-2">Mồi Câu & Cơ Chế Ép Tỉ Lệ Boss</h3>
+        <p class="text-[13px] text-[#94A3B8] mb-6">Trang bị mồi chuyên dụng để lọc bỏ cá cấp thấp hoặc triệu hồi cá thần thoại.</p>
+        <div id="baits-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Rendered by JS -->
         </div>
       </div>
-    </div>
 
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- TAB 3: BAITS & BOSS AWAKENING                           -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div id="view-baits" class="space-y-6 hidden">
-      <div>
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7]">Mồi Câu & Cơ Chế Sử Dụng</h2>
-        <p class="text-[12px] text-[#8A8A94]">Trang bị mồi để lọc bỏ cá cấp thấp hoặc triệu hồi cá thần thoại</p>
-      </div>
-
-      <div id="baitsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Rendered by JS -->
-      </div>
-
-      <!-- Boss Summoning Spotlight Box -->
-      <div class="aaa-card p-4 rounded-[16px] border border-[#FFD60A]/30">
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 rounded-[8px] bg-[#FFD60A]/10 border border-[#FFD60A]/30 flex items-center justify-center text-[#FFD60A] shrink-0 mt-0.5">
-            <i data-lucide="crown" class="w-4 h-4 stroke-[1.5]"></i>
-          </div>
-          <div>
-            <h3 class="text-[14px] font-semibold text-[#F5F5F7]">
-              Cơ Chế Ép Tỉ Lệ Xuất Hiện 100% Boss Độc Tôn (Tier 7)
-            </h3>
-            <p class="text-[12px] text-[#8A8A94] mt-1 leading-relaxed">
-              Mỗi thế giới sở hữu 4 loài Thủy Quái Tier 7 tối thượng (Leviathan, Gojira-Fish, Megalodon,...). Tỉ lệ câu tự nhiên là <strong class="text-[#FFD60A]">0.01% (1/10.000 lượt)</strong>. Khi trang bị <strong class="text-[#FFD60A]">Mồi Thức Tỉnh Thủy Quái</strong>, tỉ lệ câu được cá Boss được ép lên mức tối đa để phục vụ hoàn thiện bộ sưu tập 84/84.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- TAB 4: SKILLS & MUTATION TREE                           -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div id="view-skills" class="space-y-6 hidden">
-      <div>
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7]">Lưỡi Câu Cốt Lõi & Điểm Đột Biến (MP)</h2>
-        <p class="text-[12px] text-[#8A8A94]">Sử dụng Điểm Đột Biến thu được từ cá biến dị để nâng cấp kỹ năng vĩnh viễn</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Core Hook Upgrade Card -->
-        <div class="aaa-card p-4 rounded-[16px] flex flex-col justify-between">
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 rounded-[8px] bg-[#BF5AF2]/15 border border-[#BF5AF2]/30 flex items-center justify-center text-[#BF5AF2]">
-                <i data-lucide="sparkles" class="w-4 h-4 stroke-[1.5]"></i>
-              </div>
-              <h3 class="text-[14px] font-semibold text-[#F5F5F7]">Lưỡi Câu Cốt Lõi (Core Hook)</h3>
-            </div>
-            <p class="text-[12px] text-[#8A8A94] leading-relaxed mb-3">
-              Cường hóa trực tiếp lưỡi câu cho từng cần câu cụ thể. Gia tăng đột biến tỉ lệ xuất hiện của các loài cá Tier 5, Tier 6 và Tier 7.
-            </p>
-
-            <!-- 5 Levels Breakdown -->
-            <div class="space-y-1.5 text-[11px]">
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 1 (10 MP)</span>
-                <span class="text-[#BF5AF2] tabular-numbers">+5% T5 • +3% T6 • +1% T7</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 2 (25 MP)</span>
-                <span class="text-[#BF5AF2] tabular-numbers">+10% T5 • +6% T6 • +2% T7</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 3 (50 MP)</span>
-                <span class="text-[#BF5AF2] tabular-numbers">+15% T5 • +9% T6 • +3% T7</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 4 (100 MP)</span>
-                <span class="text-[#BF5AF2] tabular-numbers">+20% T5 • +12% T6 • +4% T7</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 5 (200 MP)</span>
-                <span class="text-[#32D74B] font-semibold tabular-numbers">+25% T5 • +15% T6 • +5% T7 (Max)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Collector Skill Card -->
-        <div class="aaa-card p-4 rounded-[16px] flex flex-col justify-between">
-          <div>
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 rounded-[8px] bg-[#5AC8FA]/15 border border-[#5AC8FA]/30 flex items-center justify-center text-[#5AC8FA]">
-                <i data-lucide="book-marked" class="w-4 h-4 stroke-[1.5]"></i>
-              </div>
-              <h3 class="text-[14px] font-semibold text-[#F5F5F7]">Kỹ Năng "Sưu Tầm Gia"</h3>
-            </div>
-            <p class="text-[12px] text-[#8A8A94] leading-relaxed mb-3">
-              Mở khóa khi câu được ít nhất 1 cá Tier 5+. Tăng xác suất xuất hiện của những loài cá <strong class="text-[#5AC8FA]">chưa từng bắt được</strong> trong Thư Viện, giúp nhanh chóng đạt mốc 84/84 loài.
-            </p>
-
-            <div class="space-y-1.5 text-[11px]">
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 1 (10 MP)</span>
-                <span class="text-[#5AC8FA] tabular-numbers">+5% Tỉ lệ cá chưa bắt</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 2 (20 MP)</span>
-                <span class="text-[#5AC8FA] tabular-numbers">+10% Tỉ lệ cá chưa bắt</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 3 (35 MP)</span>
-                <span class="text-[#5AC8FA] tabular-numbers">+15% Tỉ lệ cá chưa bắt</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 4 (50 MP)</span>
-                <span class="text-[#5AC8FA] tabular-numbers">+20% Tỉ lệ cá chưa bắt</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.03] border border-white/[0.04] flex items-center justify-between">
-                <span class="font-medium text-[#F5F5F7]">Cấp 5 (75 MP)</span>
-                <span class="text-[#32D74B] font-semibold tabular-numbers">+25% Tỉ lệ cá chưa bắt (Max)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Biological Mutations Section -->
-      <div class="pt-4 border-t border-white/[0.06]">
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7] mb-1">Hệ Thống Đột Biến Gen & Bội Số Giá Bán</h2>
-        <p class="text-[12px] text-[#8A8A94] mb-3">Mỗi con cá câu lên có xác suất xuất hiện biến dị sinh học ngẫu nhiên với hệ số nhân thưởng đặc biệt</p>
-        <div id="mutationsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <!-- Mutations Grid -->
+      <div class="pt-10 border-t border-white/10 mt-10">
+        <h3 class="text-2xl font-bold text-[#F8FAFC] mb-2">Đột Biến Gen Sinh Học & Bội Số Bán</h3>
+        <p class="text-[13px] text-[#94A3B8] mb-6">Xác suất ngẫu nhiên khi câu cá mang các đột biến gen tăng giá trị bán tới ×10 lần.</p>
+        <div id="mutations-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <!-- Rendered by JS -->
         </div>
       </div>
+
     </div>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- TAB 5: RATES & PROFIT CALCULATOR                        -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <div id="view-rates" class="space-y-6 hidden">
-      <div>
-        <h2 class="text-[17px] font-semibold text-[#F5F5F7]">Bảng Tỉ Lệ Rơi & Công Thức Kinh Tế</h2>
-        <p class="text-[12px] text-[#8A8A94]">Số liệu xác suất chính xác và máy tính mô phỏng lợi nhuận bán cá</p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Rates Table -->
-        <div class="aaa-card p-4 rounded-[16px]">
-          <h3 class="text-[14px] font-semibold text-[#F5F5F7] mb-3">Xác Suất Cắn Câu Cơ Bản</h3>
-          <div class="overflow-x-auto no-scrollbar">
-            <table class="w-full text-[11px] text-left">
-              <thead>
-                <tr class="border-b border-white/[0.08] text-[#8A8A94] uppercase tracking-wider text-[10px]">
-                  <th class="pb-2 font-medium">Tier</th>
-                  <th class="pb-2 font-medium">Phân loại</th>
-                  <th class="pb-2 font-medium">Tỉ lệ</th>
-                  <th class="pb-2 font-medium">Giá cơ bản</th>
-                </tr>
-              </thead>
-              <tbody id="ratesTableBody" class="divide-y divide-white/[0.04]">
-                <!-- Rendered by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Live Value Calculator -->
-        <div class="aaa-card p-4 rounded-[16px] flex flex-col justify-between">
-          <div>
-            <h3 class="text-[14px] font-semibold text-[#F5F5F7] mb-3">Máy Tính Doanh Thu Thực Tế</h3>
-
-            <div class="space-y-3 text-[12px]">
-              <!-- Species Picker -->
-              <div>
-                <label class="block text-[11px] text-[#8A8A94] mb-1">Chọn loài cá:</label>
-                <select id="calcFishSelect" onchange="runCalculation()" class="w-full bg-[#1A1A22] border border-white/[0.08] rounded-[10px] p-2 text-[#F5F5F7] focus:outline-none">
-                  <!-- Rendered by JS -->
-                </select>
-              </div>
-
-              <!-- Equipped Rod -->
-              <div>
-                <label class="block text-[11px] text-[#8A8A94] mb-1">Cần câu trang bị:</label>
-                <select id="calcRodSelect" onchange="runCalculation()" class="w-full bg-[#1A1A22] border border-white/[0.08] rounded-[10px] p-2 text-[#F5F5F7] focus:outline-none">
-                  <option value="rod_bamboo">Cần Tre (×1.0)</option>
-                  <option value="rod_carbon">Cần Carbon (×3.0 tại World 1)</option>
-                  <option value="rod_anti_radiation">Cần Chống Bức Xạ (Mở W2)</option>
-                  <option value="rod_nuclear">Cần Năng Lượng Hạt Nhân (×6.0 tại World 2)</option>
-                  <option value="rod_dinosaur_bone">Cần Xương Khủng Long (Mở W3)</option>
-                  <option value="rod_cosmic">Cần Cosmic (×3.0 Mọi nơi)</option>
-                </select>
-              </div>
-
-              <!-- Mutation Type Selector -->
-              <div>
-                <label class="block text-[11px] text-[#8A8A94] mb-1">Dạng đột biến gen:</label>
-                <select id="calcMutationSelect" onchange="runCalculation()" class="w-full bg-[#1A1A22] border border-white/[0.08] rounded-[10px] p-2 text-[#F5F5F7] focus:outline-none">
-                  <option value="1">Nguyên Bản (×1.0)</option>
-                  <option value="1.5">Phát Quang Neon (×1.5)</option>
-                  <option value="2.5">Cơ Khí Sinh Học (×2.5)</option>
-                  <option value="5">Đột Biến Khổng Lồ (×5.0)</option>
-                  <option value="10">Lõi Hạt Nhân Siêu Phàm (×10.0)</option>
-                </select>
-              </div>
-
-              <!-- Quantity Input -->
-              <div>
-                <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="text-[#8A8A94]">Số lượng cá trong giỏ:</span>
-                  <span id="calcCountDisplay" class="font-medium text-[#F5F5F7] tabular-numbers">1 con</span>
-                </div>
-                <input 
-                  type="range" 
-                  id="calcCountSlider" 
-                  min="1" 
-                  max="100" 
-                  value="1" 
-                  oninput="document.getElementById('calcCountDisplay').textContent = this.value + ' con'; runCalculation();"
-                  class="w-full accent-[#5AC8FA] cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Total Calculation Result -->
-          <div class="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
-            <div>
-              <span class="text-[10px] uppercase text-[#8A8A94] block tracking-wider">Tổng giá trị thu được</span>
-              <span id="calcResultGold" class="text-[20px] font-bold text-[#FFD60A] tabular-numbers block mt-0.5">
-                0 vàng
-              </span>
-            </div>
-            <div id="calcFormulaBreakdown" class="text-[10px] text-[#8A8A94] text-right max-w-[200px] leading-tight">
-              Tính toán theo hệ số thế giới và cần câu
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
+  </section>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 5. 3D SPECIMEN INSPECTOR MODAL (AAA STANDARD)            -->
+  <!-- 7. REAL-TIME PROFIT CALCULATOR                            -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <div id="fishModal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-    <div class="relative w-full max-w-2xl bg-[#0A0A0F] border border-white/[0.08] rounded-[16px] shadow-modal overflow-hidden flex flex-col max-h-[90vh]">
+  <section id="calculator" class="relative z-10 py-16 px-4 sm:px-8 border-t border-white/[0.08]">
+    <div class="max-w-7xl mx-auto">
       
-      <!-- Modal Header (Tension Layout) -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] shrink-0">
-        <div class="flex items-center gap-2">
-          <span id="modalFishTierBadge" class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[6px]">
-            Tier 1
+      <div class="mb-8">
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 border border-[#00B8D9]/30 text-[#22D3EE] mb-2 inline-block">
+          Công Cụ Mô Phỏng Tài Chính
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8FAFC]">
+          REVENUE SIMULATOR
+        </h2>
+        <p class="text-[14px] text-[#94A3B8] mt-1 max-w-xl">
+          Tính toán doanh thu thực tế khi kết hợp hệ số ngư trường, thông số cần câu và dạng biến dị gen.
+        </p>
+      </div>
+
+      <div class="ocean-glass p-6 sm:p-8 rounded-3xl max-w-3xl mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          
+          <!-- Select Creature -->
+          <div>
+            <label class="block text-[11px] font-mono text-[#94A3B8] mb-1 uppercase">Loài sinh vật:</label>
+            <select id="calc-creature-select" onchange="runSimulation()" class="w-full bg-[#03111F] border border-[#22D3EE]/30 rounded-xl p-2.5 text-[13px] text-[#F8FAFC] focus:outline-none focus:border-[#22D3EE] cursor-pointer">
+              <!-- Rendered by JS -->
+            </select>
+          </div>
+
+          <!-- Select Rod -->
+          <div>
+            <label class="block text-[11px] font-mono text-[#94A3B8] mb-1 uppercase">Cần câu trang bị:</label>
+            <select id="calc-rod-select" onchange="runSimulation()" class="w-full bg-[#03111F] border border-[#22D3EE]/30 rounded-xl p-2.5 text-[13px] text-[#F8FAFC] focus:outline-none focus:border-[#22D3EE] cursor-pointer">
+              <option value="rod_bamboo">Cần Tre Làng (×1.0)</option>
+              <option value="rod_carbon">Cần Sợi Carbon (×3.0 tại W1)</option>
+              <option value="rod_anti_radiation">Cần Chống Bức Xạ (Mở W2)</option>
+              <option value="rod_nuclear">Cần Năng Lượng Hạt Nhân (×6.0 tại W2)</option>
+              <option value="rod_dinosaur_bone">Cần Xương Khủng Long (Mở W3)</option>
+              <option value="rod_cosmic">Cần Thần Khí Cosmic (×3.0 Mọi nơi)</option>
+            </select>
+          </div>
+
+          <!-- Select Mutation -->
+          <div>
+            <label class="block text-[11px] font-mono text-[#94A3B8] mb-1 uppercase">Dạng đột biến:</label>
+            <select id="calc-mutation-select" onchange="runSimulation()" class="w-full bg-[#03111F] border border-[#22D3EE]/30 rounded-xl p-2.5 text-[13px] text-[#F8FAFC] focus:outline-none focus:border-[#22D3EE] cursor-pointer">
+              <option value="1">Nguyên Bản (×1.0)</option>
+              <option value="1.5">Phát Quang Neon (×1.5)</option>
+              <option value="2.5">Cơ Khí Sinh Học (×2.5)</option>
+              <option value="5">Đột Biến Khổng Lồ (×5.0)</option>
+              <option value="10">Lõi Hạt Nhân Siêu Phàm (×10.0)</option>
+            </select>
+          </div>
+
+          <!-- Catch Quantity -->
+          <div>
+            <div class="flex items-center justify-between text-[11px] font-mono text-[#94A3B8] mb-1 uppercase">
+              <span>Số lượng thu hoạch:</span>
+              <span id="calc-quantity-val" class="text-[#22D3EE] font-bold">1 con</span>
+            </div>
+            <input 
+              type="range" 
+              id="calc-quantity-slider" 
+              min="1" 
+              max="100" 
+              value="1" 
+              oninput="document.getElementById('calc-quantity-val').textContent = this.value + ' con'; runSimulation();"
+              class="w-full accent-[#22D3EE] cursor-pointer mt-2"
+            />
+          </div>
+
+        </div>
+
+        <!-- Calculated Output Dashboard -->
+        <div class="p-5 rounded-2xl bg-[#010812]/80 border border-[#22D3EE]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <span class="text-[10px] font-mono uppercase text-[#94A3B8] block">Doanh thu dự kiến</span>
+            <span id="calc-gold-output" class="text-3xl sm:text-4xl font-extrabold text-[#F59E0B] font-mono tabular-numbers block mt-0.5">
+              0 Vàng
+            </span>
+          </div>
+          <div id="calc-formula-display" class="text-[11px] font-mono text-[#94A3B8] sm:text-right max-w-sm leading-relaxed">
+            Hệ thức: Gốc × Thế giới × Cần × Đột biến × SL
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────────────────────────────── -->
+  <!-- 8. 3D DIGITAL MUSEUM SPECIMEN EXHIBIT (MODAL)             -->
+  <!-- ───────────────────────────────────────────────────────── -->
+  <div id="specimen-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl">
+    <div class="relative w-full max-w-4xl bg-[#03111F] border border-[#22D3EE]/30 rounded-3xl shadow-modal-3d overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Navigation Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-3">
+          <span id="modal-tier-badge" class="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full">
+            TIER 1
           </span>
-          <h3 id="modalFishTitle" class="text-[16px] font-semibold text-[#F5F5F7]">
-            Tên cá
+          <h3 id="modal-title" class="text-[18px] sm:text-[20px] font-bold text-[#F8FAFC]">
+            Tên sinh vật
           </h3>
         </div>
-        <button onclick="closeFishModal()" class="w-7 h-7 rounded-[8px] bg-white/[0.06] hover:bg-white/[0.1] text-[#8A8A94] hover:text-[#F5F5F7] flex items-center justify-center cursor-pointer transition-colors" title="Đóng (Esc)">
+        <button onclick="closeSpecimenModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#94A3B8] hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Đóng (Esc)">
           <i data-lucide="x" class="w-4 h-4 stroke-[1.5]"></i>
         </button>
       </div>
 
-      <!-- Modal Body (2-Column Specimen Display) -->
-      <div class="flex-1 overflow-y-auto no-scrollbar p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Modal Body (2-Column 3D Hologram Exhibition) -->
+      <div class="flex-1 overflow-y-auto no-scrollbar p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
         
-        <!-- Left Column: 3D Specimen Viewport -->
-        <div class="flex flex-col items-center justify-center">
-          <div class="relative w-full h-56 rounded-[12px] bg-[#14141A] border border-white/[0.06] overflow-hidden flex items-center justify-center" style="box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06)">
-            <!-- Three.js 3D Specimen Canvas -->
-            <canvas id="specimen-3d-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+        <!-- Left: 3D Holographic Specimen Viewport (7 Cols) -->
+        <div class="md:col-span-7 flex flex-col items-center justify-center">
+          <div class="relative w-full h-72 sm:h-80 rounded-2xl bg-[#010812] border border-[#22D3EE]/20 overflow-hidden flex items-center justify-center shadow-inner">
+            <!-- 3D Specimen WebGL Canvas -->
+            <canvas id="specimen-modal-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
 
-            <span class="absolute bottom-2 left-2 text-[10px] text-[#8A8A94] flex items-center gap-1 pointer-events-none">
-              <i data-lucide="rotate-3d" class="w-3 h-3 stroke-[1.5]"></i>
-              Kéo chuột để xoay 3D
-            </span>
+            <!-- Holographic Radar Coordinates -->
+            <div class="absolute top-3 left-3 pointer-events-none text-[9px] font-mono text-[#22D3EE]/70 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#22D3EE] animate-pulse"></span>
+              <span>TURNTABLE HOLOGRAM ACTIVE</span>
+            </div>
+
+            <div class="absolute bottom-3 right-3 pointer-events-none text-[10px] font-mono text-[#94A3B8] flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded">
+              <i data-lucide="rotate-3d" class="w-3 h-3 text-[#22D3EE]"></i>
+              <span>Kéo chuột xoay • Cuộn zoom</span>
+            </div>
           </div>
         </div>
 
-        <!-- Right Column: Taxonomy, Biology & Advice -->
-        <div class="flex flex-col justify-between space-y-3">
+        <!-- Right: Biology, Taxonomy & Tactical Advice (5 Cols) -->
+        <div class="md:col-span-5 flex flex-col justify-between space-y-4">
           <div>
-            <span class="text-[10px] font-medium text-[#8A8A94] uppercase tracking-wider block mb-1">
-              Đặc Điểm Sinh Học
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[#22D3EE] block mb-1">
+              HỒ SƠ SINH THÁI BIỂN SÂU
             </span>
-            <p id="modalFishLore" class="text-[13px] text-[#F5F5F7] leading-relaxed bg-[#14141A] p-3 rounded-[10px] border border-white/[0.04]">
-              Đang tải thông tin...
+            <p id="modal-lore" class="text-[13px] text-[#F8FAFC] leading-relaxed bg-[#062A45]/40 p-3.5 rounded-2xl border border-white/5">
+              Đang phân tích dữ liệu sinh học...
             </p>
           </div>
 
-          <!-- Metrics Grid -->
-          <div class="grid grid-cols-2 gap-2 text-[11px]">
-            <div class="p-2 rounded-[8px] bg-[#14141A] border border-white/[0.04]">
-              <span class="text-[#8A8A94] block text-[10px]">Cỡ kỷ lục</span>
-              <span id="modalFishSize" class="font-medium text-[#F5F5F7] tabular-numbers mt-0.5 block">0.5 ~ 2.5 kg</span>
+          <!-- Telemetry Specs Grid -->
+          <div class="grid grid-cols-2 gap-2.5 text-[11px] font-mono">
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[#94A3B8] block text-[9px]">CỠ KỶ LỤC</span>
+              <span id="modal-size" class="font-bold text-[#F8FAFC] tabular-numbers mt-0.5 block">0.5 ~ 2.5 kg</span>
             </div>
-            <div class="p-2 rounded-[8px] bg-[#14141A] border border-white/[0.04]">
-              <span class="text-[#8A8A94] block text-[10px]">Giá cơ sở</span>
-              <span id="modalFishPrice" class="font-medium text-[#FFD60A] tabular-numbers mt-0.5 block">10 vàng</span>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[#94A3B8] block text-[9px]">GIÁ CƠ SỞ</span>
+              <span id="modal-price" class="font-bold text-[#F59E0B] tabular-numbers mt-0.5 block">10 vàng</span>
             </div>
-            <div class="p-2 rounded-[8px] bg-[#14141A] border border-white/[0.04]">
-              <span class="text-[#8A8A94] block text-[10px]">Tỉ lệ cắn câu</span>
-              <span id="modalFishRate" class="font-medium text-[#5AC8FA] tabular-numbers mt-0.5 block">17.5%</span>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[#94A3B8] block text-[9px]">TỈ LỆ CẮN</span>
+              <span id="modal-rate" class="font-bold text-[#22D3EE] tabular-numbers mt-0.5 block">70.0%</span>
             </div>
-            <div class="p-2 rounded-[8px] bg-[#14141A] border border-white/[0.04]">
-              <span class="text-[#8A8A94] block text-[10px]">Ngư trường</span>
-              <span id="modalFishWorld" class="font-medium text-[#F5F5F7] mt-0.5 block">World 1</span>
+            <div class="p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <span class="text-[#94A3B8] block text-[9px]">NGƯ TRƯỜNG</span>
+              <span id="modal-world" class="font-bold text-[#F8FAFC] mt-0.5 block">World 1</span>
             </div>
           </div>
 
-          <!-- Fishing Tip -->
-          <div class="p-2.5 rounded-[10px] bg-[#5AC8FA]/10 border border-[#5AC8FA]/20 text-[11px] text-[#5AC8FA]">
-            <span class="font-semibold block mb-0.5">Lời khuyên câu cá:</span>
-            <span id="modalFishTip">Dùng mồi thích hợp để tăng cơ hội cắn câu.</span>
+          <!-- Fishing Tip Card -->
+          <div class="p-3 rounded-2xl bg-[#00B8D9]/10 border border-[#00B8D9]/25 text-[12px] text-[#67E8F9]">
+            <span class="font-bold block mb-0.5 flex items-center gap-1.5 text-[#22D3EE]">
+              <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Lời khuyên săn bắt:
+            </span>
+            <span id="modal-tip" class="leading-relaxed">Dùng mồi thích hợp để tăng tỉ lệ cắn câu.</span>
           </div>
         </div>
 
       </div>
 
       <!-- Modal Footer -->
-      <div class="px-4 py-2.5 border-t border-white/[0.06] bg-[#0A0A0F] flex items-center justify-between text-[11px] text-[#8A8A94]">
-        <span>Bách Khoa Thư LOQ Island</span>
-        <button onclick="closeFishModal()" class="px-3 py-1 rounded-[8px] bg-[#14141A] hover:bg-[#1A1A22] text-[#F5F5F7] border border-white/[0.06] font-medium cursor-pointer transition-colors">
-          Đóng cửa sổ
+      <div class="px-6 py-3 border-t border-white/10 bg-[#010812] flex items-center justify-between text-[11px] font-mono text-[#94A3B8]">
+        <span>LOQ ISLAND • MARINE REPOSITORY</span>
+        <button onclick="closeSpecimenModal()" class="px-4 py-1.5 rounded-full bg-[#062A45] hover:bg-[#00B8D9]/20 text-[#F8FAFC] border border-[#22D3EE]/30 font-medium transition-colors cursor-pointer">
+          Đóng cửa sổ (Esc)
         </button>
       </div>
 
@@ -757,198 +908,492 @@
   </div>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 6. FOOTER (CLEAN RESTRAINED)                             -->
+  <!-- 9. MINIMAL DEEP OCEAN FOOTER                              -->
   <!-- ───────────────────────────────────────────────────────── -->
-  <footer class="relative z-10 border-t border-white/[0.06] py-6 text-center text-[12px] text-[#8A8A94]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#32D74B]"></span>
-        <span>HyperIsland LOQ Fishing Mini-Game • Tối ưu chuẩn Dynamic Island macOS/Windows</span>
+  <footer class="relative z-10 border-t border-white/10 py-12 px-4 sm:px-8 text-[12px] text-[#94A3B8] bg-[#010812]/90">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Facility Info -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-[#062A45] border border-[#22D3EE]/30 flex items-center justify-center text-[#22D3EE]">
+          <i data-lucide="waves" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-[#F8FAFC] block">DEEP SEA DIGITAL ENCYCLOPEDIA</span>
+          <span class="text-[11px]">Hải dương học & sinh thái biển sâu • LOQ Island Mini-Game</span>
+        </div>
       </div>
-      <div class="flex items-center gap-4">
-        <a href="https://github.com/ptdat30/LOQ_ISLAND" target="_blank" rel="noopener noreferrer" class="hover:text-[#F5F5F7] transition-colors">
-          GitHub Repo
-        </a>
-        <span>•</span>
-        <span>84 Loài cá độc quyền</span>
+
+      <!-- Links -->
+      <div class="flex items-center gap-6">
+        <a href="#hero" class="hover:text-[#22D3EE] transition-colors">Về đầu trang</a>
+        <a href="#database" class="hover:text-[#22D3EE] transition-colors">Bộ sưu tập cá</a>
+        <a href="#worlds" class="hover:text-[#22D3EE] transition-colors">Tầng sinh thái</a>
+        <a href="https://github.com/ptdat30/LOQ_ISLAND" target="_blank" rel="noopener noreferrer" class="hover:text-[#22D3EE] transition-colors">GitHub Source</a>
       </div>
+
+      <!-- Copyright -->
+      <div class="text-[11px] font-mono text-[#94A3B8]/60">
+        © 2026 LOQ Island. All specimens classified.
+      </div>
+
     </div>
   </footer>
 
   <!-- ───────────────────────────────────────────────────────── -->
-  <!-- 7. APPLICATION SCRIPT (LOGIC & 3D ENGINE)                 -->
+  <!-- 10. ADVANCED 3D GRAPHICS & APPLICATION LOGIC              -->
   <!-- ───────────────────────────────────────────────────────── -->
   <script>
-    // Exact Tier Color Tokens matching AAA standards
+    // -------------------------------------------------------------
+    // Sophisticated Tier Tokens (Aligned with prompt palette)
+    // -------------------------------------------------------------
     const TIER_TOKENS = {
-      1: { name: 'Phổ Thông', hex: '#6E6E78', bg: 'rgba(110, 110, 120, 0.15)', border: 'rgba(110, 110, 120, 0.35)' },
-      2: { name: 'Hiếm', hex: '#32D74B', bg: 'rgba(50, 215, 75, 0.15)', border: 'rgba(50, 215, 75, 0.35)' },
-      3: { name: 'Đặc Sắc', hex: '#5AC8FA', bg: 'rgba(90, 200, 250, 0.15)', border: 'rgba(90, 200, 250, 0.35)' },
-      4: { name: 'Sử Thi', hex: '#BF5AF2', bg: 'rgba(191, 90, 242, 0.15)', border: 'rgba(191, 90, 242, 0.35)' },
-      5: { name: 'Huyền Thoại', hex: '#FF9F0A', bg: 'rgba(255, 159, 10, 0.15)', border: 'rgba(255, 159, 10, 0.35)' },
-      6: { name: 'Thần Thoại', hex: '#FF453A', bg: 'rgba(255, 69, 58, 0.15)', border: 'rgba(255, 69, 58, 0.35)' },
-      7: { name: 'Boss Độc Tôn', hex: '#FFD60A', bg: 'rgba(255, 214, 10, 0.18)', border: 'rgba(255, 214, 10, 0.45)' },
+      1: { name: 'Phổ Thông', hex: '#00B8D9', bg: 'rgba(0, 184, 217, 0.15)', border: 'rgba(0, 184, 217, 0.35)' },
+      2: { name: 'Hiếm', hex: '#38BDF8', bg: 'rgba(56, 189, 248, 0.15)', border: 'rgba(56, 189, 248, 0.35)' },
+      3: { name: 'Đặc Sắc', hex: '#6366F1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.35)' },
+      4: { name: 'Sử Thi', hex: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.35)' },
+      5: { name: 'Huyền Thoại', hex: '#EC4899', bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.35)' },
+      6: { name: 'Thần Thoại', hex: '#F43F5E', bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.35)' },
+      7: { name: 'Boss Độc Tôn', hex: '#F59E0B', bg: 'rgba(245, 158, 11, 0.20)', border: 'rgba(245, 158, 11, 0.50)' },
     };
 
-    // State
+    // -------------------------------------------------------------
+    // Application State
+    // -------------------------------------------------------------
     let currentWorld = 0;
     let currentTier = 0;
     let searchQuery = '';
+    let isAudioPlaying = false;
+    let audioContext = null;
 
-    // Ambient Three.js Background (Subtle dark wireframe mesh)
-    let ambientRenderer, ambientScene, ambientCamera;
-    function initAmbientBackground() {
-      const canvas = document.getElementById('ambient-canvas');
+    // -------------------------------------------------------------
+    // 1. Full-Screen Procedural Underwater WebGL System
+    // (Volumetric Light Rays, 3-Layer Marine Snow, Rising Bubbles,
+    //  Silhouetted Leviathans, Mouse Parallax & Scroll Depth)
+    // -------------------------------------------------------------
+    let oceanRenderer, oceanScene, oceanCamera;
+    let lightRays = [], bubbles = [], particleLayers = [], distantCreatures = [];
+    let mouseX = 0, mouseY = 0, targetCameraY = 0;
+
+    function initUnderwaterBackground() {
+      const canvas = document.getElementById('underwater-canvas');
       if (!canvas) return;
 
-      ambientScene = new THREE.Scene();
-      ambientCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-      ambientCamera.position.z = 100;
+      oceanScene = new THREE.Scene();
+      oceanScene.fog = new THREE.FogExp2(0x010812, 0.012);
 
-      ambientRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      ambientRenderer.setSize(window.innerWidth, window.innerHeight);
-      ambientRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      oceanCamera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+      oceanCamera.position.set(0, 0, 45);
 
-      // Subtle particles
-      const count = 120;
-      const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(count * 3);
-      for (let i = 0; i < count * 3; i += 3) {
-        pos[i] = (Math.random() - 0.5) * 200;
-        pos[i + 1] = (Math.random() - 0.5) * 150;
-        pos[i + 2] = (Math.random() - 0.5) * 100;
+      oceanRenderer = new THREE.WebGLRenderer({ canvas, alpha: false, antialias: true });
+      oceanRenderer.setSize(window.innerWidth, window.innerHeight);
+      oceanRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      oceanRenderer.setClearColor(0x010812, 1);
+
+      // Ambient & Directional Sunbeam Lighting
+      const ambientLight = new THREE.AmbientLight(0x062A45, 1.2);
+      oceanScene.add(ambientLight);
+
+      const surfaceSunLight = new THREE.DirectionalLight(0x22D3EE, 1.5);
+      surfaceSunLight.position.set(-20, 50, 20);
+      oceanScene.add(surfaceSunLight);
+
+      // Volumetric Light Beams (Sunlight Shafts)
+      for (let i = 0; i < 6; i++) {
+        const rayGeo = new THREE.CylinderGeometry(1.5 + i * 0.4, 8 + i * 2, 80, 16, 1, true);
+        const rayMat = new THREE.MeshBasicMaterial({
+          color: i % 2 === 0 ? 0x22D3EE : 0x00B8D9,
+          transparent: true,
+          opacity: 0.04 + Math.random() * 0.03,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const rayMesh = new THREE.Mesh(rayGeo, rayMat);
+        rayMesh.position.set(-35 + i * 15, 25, -20 - i * 5);
+        rayMesh.rotation.z = -0.35 + (i * 0.05);
+        rayMesh.rotation.x = 0.2;
+        oceanScene.add(rayMesh);
+        lightRays.push({ mesh: rayMesh, baseOpacity: rayMat.opacity, phase: i * 1.2 });
       }
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      const mat = new THREE.PointsMaterial({
-        color: 0x5AC8FA,
-        size: 1.2,
-        transparent: true,
-        opacity: 0.25,
+
+      // 3-Layer Marine Snow & Plankton Particle System
+      const layerConfigs = [
+        { count: 120, size: 2.2, color: 0x67E8F9, opacity: 0.6, zRange: 35, speed: 0.008 },  // Close Plankton
+        { count: 450, size: 1.4, color: 0x22D3EE, opacity: 0.4, zRange: 70, speed: 0.004 },  // Mid Marine Snow
+        { count: 800, size: 0.9, color: 0x062A45, opacity: 0.3, zRange: 120, speed: 0.002 }, // Distant Motes
+      ];
+
+      layerConfigs.forEach((cfg) => {
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(cfg.count * 3);
+        for (let i = 0; i < cfg.count * 3; i += 3) {
+          pos[i] = (Math.random() - 0.5) * 120;
+          pos[i + 1] = (Math.random() - 0.5) * 90;
+          pos[i + 2] = (Math.random() - 0.5) * cfg.zRange;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({
+          color: cfg.color,
+          size: cfg.size,
+          transparent: true,
+          opacity: cfg.opacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const points = new THREE.Points(geo, mat);
+        oceanScene.add(points);
+        particleLayers.push({ points, speed: cfg.speed });
       });
-      const points = new THREE.Points(geo, mat);
-      ambientScene.add(points);
 
-      function animate() {
-        requestAnimationFrame(animate);
-        points.rotation.y += 0.0003;
-        points.rotation.x += 0.0001;
-        ambientRenderer.render(ambientScene, ambientCamera);
+      // Procedural Rising Bubbles
+      const bubbleGeo = new THREE.SphereGeometry(0.35, 12, 12);
+      const bubbleMat = new THREE.MeshStandardMaterial({
+        color: 0x67E8F9,
+        transparent: true,
+        opacity: 0.45,
+        roughness: 0.1,
+        metalness: 0.8,
+        blending: THREE.AdditiveBlending,
+      });
+
+      for (let i = 0; i < 35; i++) {
+        const bubble = new THREE.Mesh(bubbleGeo, bubbleMat);
+        bubble.scale.setScalar(0.4 + Math.random() * 1.2);
+        bubble.position.set(
+          (Math.random() - 0.5) * 80,
+          -40 + Math.random() * 80,
+          (Math.random() - 0.5) * 30
+        );
+        bubble.userData = {
+          speedY: 0.04 + Math.random() * 0.08,
+          wobbleFreq: 1.5 + Math.random() * 2,
+          wobbleAmp: 0.02 + Math.random() * 0.03,
+          seed: Math.random() * 10,
+        };
+        oceanScene.add(bubble);
+        bubbles.push(bubble);
       }
-      animate();
 
+      // Distant Silhouetted Leviathans (Whale / Leviathan Shadows)
+      const creatureShape = new THREE.Shape();
+      creatureShape.moveTo(0, 0);
+      creatureShape.bezierCurveTo(8, 3, 20, 2, 35, 0);
+      creatureShape.bezierCurveTo(25, -4, 12, -3, 0, 0);
+      const creatureGeo = new THREE.ShapeGeometry(creatureShape);
+      const creatureMat = new THREE.MeshBasicMaterial({
+        color: 0x020E1A,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      });
+
+      for (let i = 0; i < 2; i++) {
+        const mesh = new THREE.Mesh(creatureGeo, creatureMat);
+        mesh.position.set(-80 + i * 90, 10 - i * 25, -90 - i * 20);
+        mesh.scale.set(0.7, 0.7, 0.7);
+        oceanScene.add(mesh);
+        distantCreatures.push({ mesh, speed: 0.025 + i * 0.015 });
+      }
+
+      // Render Loop
+      const clock = new THREE.Clock();
+      function animateOcean() {
+        requestAnimationFrame(animateOcean);
+        const t = clock.getElapsedTime();
+
+        // Subtle ambient camera drift
+        oceanCamera.position.x += ((mouseX * 4) - oceanCamera.position.x) * 0.03;
+        oceanCamera.position.y += ((targetCameraY + Math.sin(t * 0.15) * 0.8) - oceanCamera.position.y) * 0.05;
+
+        // Animate volumetric light rays
+        lightRays.forEach((ray) => {
+          ray.mesh.material.opacity = ray.baseOpacity + Math.sin(t * 1.5 + ray.phase) * 0.02;
+          ray.mesh.rotation.z += Math.sin(t * 0.5 + ray.phase) * 0.0003;
+        });
+
+        // Animate marine snow layers
+        particleLayers.forEach((layer) => {
+          layer.points.rotation.y += layer.speed * 0.5;
+          const pos = layer.points.geometry.attributes.position.array;
+          for (let i = 1; i < pos.length; i += 3) {
+            pos[i] -= layer.speed * 8;
+            if (pos[i] < -45) pos[i] = 45;
+          }
+          layer.points.geometry.attributes.position.needsUpdate = true;
+        });
+
+        // Animate rising bubbles
+        bubbles.forEach((b) => {
+          b.position.y += b.userData.speedY;
+          b.position.x += Math.sin(t * b.userData.wobbleFreq + b.userData.seed) * b.userData.wobbleAmp;
+          if (b.position.y > 45) {
+            b.position.y = -45;
+            b.position.x = (Math.random() - 0.5) * 80;
+          }
+        });
+
+        // Animate distant creatures gliding slowly across
+        distantCreatures.forEach((dc) => {
+          dc.mesh.position.x += dc.speed;
+          dc.mesh.position.y += Math.sin(t * 0.5) * 0.01;
+          if (dc.mesh.position.x > 100) dc.mesh.position.x = -110;
+        });
+
+        oceanRenderer.render(oceanScene, oceanCamera);
+      }
+      animateOcean();
+
+      // Window Resize Listener
       window.addEventListener('resize', () => {
-        ambientCamera.aspect = window.innerWidth / window.innerHeight;
-        ambientCamera.updateProjectionMatrix();
-        ambientRenderer.setSize(window.innerWidth, window.innerHeight);
+        oceanCamera.aspect = window.innerWidth / window.innerHeight;
+        oceanCamera.updateProjectionMatrix();
+        oceanRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Mouse Parallax Listener
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      // Scroll Depth Connection
+      window.addEventListener('scroll', () => {
+        const scrollPct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight || 1);
+        targetCameraY = -scrollPct * 35; // Dives 35 units deeper as user scrolls to footer
       });
     }
 
-    // 3D Specimen Inspector Engine
-    let specimenScene, specimenCamera, specimenRenderer, specimenControls, specimenMesh, specimenRingMat;
-    let specimenClock = new THREE.Clock();
+    // -------------------------------------------------------------
+    // 2. Hero 3D Marine Creature Showcase (Interactive Manta Ray)
+    // -------------------------------------------------------------
+    let heroRenderer, heroScene, heroCamera, heroControls, mantaGroup;
+    let leftWing, rightWing, mantaTail;
 
-    function initSpecimenInspector() {
-      const canvas = document.getElementById('specimen-3d-canvas');
+    function initHeroCreature() {
+      const canvas = document.getElementById('hero-creature-canvas');
       if (!canvas) return;
 
-      specimenScene = new THREE.Scene();
-      specimenCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-      specimenCamera.position.set(0, 0.2, 4.3);
+      heroScene = new THREE.Scene();
+      heroCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+      heroCamera.position.set(0, 2.5, 6.0);
 
-      specimenRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      specimenRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      heroRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const rect = canvas.getBoundingClientRect();
+      heroRenderer.setSize(rect.width, rect.height);
 
       if (window.THREE && THREE.OrbitControls) {
-        specimenControls = new THREE.OrbitControls(specimenCamera, canvas);
-        specimenControls.enableDamping = true;
-        specimenControls.dampingFactor = 0.05;
-        specimenControls.enablePan = false;
-        specimenControls.minDistance = 2.5;
-        specimenControls.maxDistance = 6.0;
-        specimenControls.maxPolarAngle = Math.PI / 2 + 0.1;
+        heroControls = new THREE.OrbitControls(heroCamera, canvas);
+        heroControls.enableDamping = true;
+        heroControls.dampingFactor = 0.05;
+        heroControls.enablePan = false;
+        heroControls.minDistance = 3.5;
+        heroControls.maxDistance = 8.5;
+        heroControls.maxPolarAngle = Math.PI / 2 + 0.3;
+      }
+
+      // Lighting for Hero Creature
+      const heroAmbient = new THREE.AmbientLight(0x062A45, 1.6);
+      heroScene.add(heroAmbient);
+
+      const heroSun = new THREE.DirectionalLight(0x22D3EE, 2.0);
+      heroSun.position.set(4, 8, 5);
+      heroScene.add(heroSun);
+
+      const heroRim = new THREE.DirectionalLight(0x67E8F9, 1.2);
+      heroRim.position.set(-4, -3, -5);
+      heroScene.add(heroRim);
+
+      // Construct Procedural 3D Manta Ray Model
+      mantaGroup = new THREE.Group();
+
+      // Main Central Body
+      const bodyGeo = new THREE.ConeGeometry(0.85, 3.2, 16);
+      bodyGeo.rotateX(Math.PI / 2);
+      bodyGeo.scale(1.2, 0.35, 1.0);
+      const mantaMat = new THREE.MeshStandardMaterial({
+        color: 0x08263E,
+        roughness: 0.3,
+        metalness: 0.6,
+        emissive: 0x00B8D9,
+        emissiveIntensity: 0.15,
+      });
+      const bodyMesh = new THREE.Mesh(bodyGeo, mantaMat);
+      mantaGroup.add(bodyMesh);
+
+      // Left Pectoral Wing
+      const wingGeo = new THREE.ConeGeometry(1.6, 2.8, 12);
+      wingGeo.rotateZ(Math.PI / 2);
+      wingGeo.scale(1.0, 0.12, 0.7);
+      leftWing = new THREE.Mesh(wingGeo, mantaMat);
+      leftWing.position.set(-1.4, 0, 0.2);
+      mantaGroup.add(leftWing);
+
+      // Right Pectoral Wing
+      const rightWingGeo = wingGeo.clone();
+      rightWingGeo.rotateZ(Math.PI);
+      rightWing = new THREE.Mesh(rightWingGeo, mantaMat);
+      rightWing.position.set(1.4, 0, 0.2);
+      mantaGroup.add(rightWing);
+
+      // Slender Tail
+      const tailGeo = new THREE.CylinderGeometry(0.04, 0.12, 3.5, 8);
+      tailGeo.rotateX(Math.PI / 2);
+      mantaTail = new THREE.Mesh(tailGeo, mantaMat);
+      mantaTail.position.set(0, 0, -2.8);
+      mantaGroup.add(mantaTail);
+
+      // Bioluminescent Glow Spots on Back
+      const spotGeo = new THREE.SphereGeometry(0.06, 8, 8);
+      const spotMat = new THREE.MeshBasicMaterial({ color: 0x22D3EE });
+      for (let i = -3; i <= 3; i++) {
+        const spot1 = new THREE.Mesh(spotGeo, spotMat);
+        spot1.position.set(0.3, 0.16, i * 0.3);
+        mantaGroup.add(spot1);
+
+        const spot2 = new THREE.Mesh(spotGeo, spotMat);
+        spot2.position.set(-0.3, 0.16, i * 0.3);
+        mantaGroup.add(spot2);
+      }
+
+      heroScene.add(mantaGroup);
+
+      // Animate Hero Creature Swimming
+      const heroClock = new THREE.Clock();
+      function animateHeroManta() {
+        requestAnimationFrame(animateHeroManta);
+        const t = heroClock.getElapsedTime();
+        if (heroControls) heroControls.update();
+
+        // Natural wing flapping (Sinusoidal undulation)
+        if (leftWing && rightWing) {
+          leftWing.rotation.z = Math.sin(t * 2.2) * 0.28;
+          rightWing.rotation.z = -Math.sin(t * 2.2) * 0.28;
+          leftWing.position.y = Math.sin(t * 2.2) * 0.08;
+          rightWing.position.y = Math.sin(t * 2.2) * 0.08;
+        }
+
+        // Tail whip animation
+        if (mantaTail) {
+          mantaTail.rotation.y = Math.sin(t * 2.2 - 0.8) * 0.25;
+        }
+
+        // Whole body smooth gliding & hover
+        if (mantaGroup) {
+          mantaGroup.position.y = Math.sin(t * 1.5) * 0.15;
+          mantaGroup.rotation.y = Math.sin(t * 0.8) * 0.15;
+          mantaGroup.rotation.z = Math.sin(t * 2.2) * 0.06; // slight roll
+        }
+
+        heroRenderer.render(heroScene, heroCamera);
+      }
+      animateHeroManta();
+
+      // Handle Resize
+      window.addEventListener('resize', () => {
+        const r = canvas.getBoundingClientRect();
+        heroCamera.aspect = r.width / r.height;
+        heroCamera.updateProjectionMatrix();
+        heroRenderer.setSize(r.width, r.height);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 3. 3D Digital Museum Specimen Inspector (Modal Viewport)
+    // -------------------------------------------------------------
+    let modalRenderer, modalScene, modalCamera, modalControls, modalSpecimenMesh, modalPedestalRingMat;
+    let modalClock = new THREE.Clock();
+
+    function initModalInspector() {
+      const canvas = document.getElementById('specimen-modal-canvas');
+      if (!canvas) return;
+
+      modalScene = new THREE.Scene();
+      modalCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      modalCamera.position.set(0, 0.4, 4.4);
+
+      modalRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      if (window.THREE && THREE.OrbitControls) {
+        modalControls = new THREE.OrbitControls(modalCamera, canvas);
+        modalControls.enableDamping = true;
+        modalControls.dampingFactor = 0.05;
+        modalControls.enablePan = false;
+        modalControls.minDistance = 2.5;
+        modalControls.maxDistance = 6.5;
+        modalControls.maxPolarAngle = Math.PI / 2 + 0.1;
       }
 
       // Lights
       const ambient = new THREE.AmbientLight(0xffffff, 0.95);
-      specimenScene.add(ambient);
+      modalScene.add(ambient);
 
-      const dirLight = new THREE.DirectionalLight(0x5AC8FA, 0.9);
-      dirLight.position.set(3, 4, 5);
-      specimenScene.add(dirLight);
+      const dirLight = new THREE.DirectionalLight(0x22D3EE, 1.2);
+      dirLight.position.set(3, 5, 5);
+      modalScene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.7);
       rimLight.position.set(-3, -2, -4);
-      specimenScene.add(rimLight);
+      modalScene.add(rimLight);
 
-      // Holographic Specimen Pedestal
+      // Hologram Turntable Pedestal
       const pedestalGroup = new THREE.Group();
       pedestalGroup.position.y = -1.15;
 
-      // Base disc
       const baseGeo = new THREE.CylinderGeometry(1.6, 1.7, 0.06, 48);
       const baseMat = new THREE.MeshStandardMaterial({
-        color: 0x14141a,
-        roughness: 0.7,
-        metalness: 0.2,
+        color: 0x062A45,
+        roughness: 0.6,
+        metalness: 0.3,
       });
       const baseMesh = new THREE.Mesh(baseGeo, baseMat);
       pedestalGroup.add(baseMesh);
 
-      // Inner glowing ring matching tier accent
-      const ringGeo = new THREE.RingGeometry(1.15, 1.25, 48);
+      // Inner Glowing Laser Ring
+      const ringGeo = new THREE.RingGeometry(1.2, 1.28, 48);
       ringGeo.rotateX(-Math.PI / 2);
-      specimenRingMat = new THREE.MeshBasicMaterial({
-        color: 0x5AC8FA,
+      modalPedestalRingMat = new THREE.MeshBasicMaterial({
+        color: 0x22D3EE,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.75,
       });
-      const ringMesh = new THREE.Mesh(ringGeo, specimenRingMat);
+      const ringMesh = new THREE.Mesh(ringGeo, modalPedestalRingMat);
       ringMesh.position.y = 0.035;
       pedestalGroup.add(ringMesh);
 
-      // Outer subtle ring
-      const ringOuterGeo = new THREE.RingGeometry(1.45, 1.50, 48);
-      ringOuterGeo.rotateX(-Math.PI / 2);
-      const ringOuterMat = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.12,
-      });
-      const ringOuterMesh = new THREE.Mesh(ringOuterGeo, ringOuterMat);
-      ringOuterMesh.position.y = 0.035;
-      pedestalGroup.add(ringOuterMesh);
+      // Coordinate Grid
+      const grid = new THREE.GridHelper(2.5, 6, 0x22D3EE, 0x062A45);
+      grid.position.y = 0.036;
+      pedestalGroup.add(grid);
 
-      // Holographic coordinate grid
-      const gridHelper = new THREE.GridHelper(2.5, 6, 0x5AC8FA, 0x22222a);
-      gridHelper.position.y = 0.036;
-      pedestalGroup.add(gridHelper);
+      modalScene.add(pedestalGroup);
 
-      specimenScene.add(pedestalGroup);
-
-      function animateSpecimen() {
-        requestAnimationFrame(animateSpecimen);
-        const t = specimenClock.getElapsedTime();
-        if (specimenControls) specimenControls.update();
-        if (specimenMesh) {
-          specimenMesh.rotation.y += 0.007;
-          specimenMesh.position.y = Math.sin(t * 1.8) * 0.06;
+      function animateModalSpecimen() {
+        requestAnimationFrame(animateModalSpecimen);
+        const t = modalClock.getElapsedTime();
+        if (modalControls) modalControls.update();
+        if (modalSpecimenMesh) {
+          modalSpecimenMesh.rotation.y += 0.007;
+          modalSpecimenMesh.position.y = Math.sin(t * 1.8) * 0.06;
         }
-        specimenRenderer.render(specimenScene, specimenCamera);
+        modalRenderer.render(modalScene, modalCamera);
       }
-      animateSpecimen();
+      animateModalSpecimen();
     }
 
-    function load3DSpecimen(imgUrl, tierHex) {
-      if (specimenRingMat && tierHex) {
-        specimenRingMat.color.set(tierHex);
+    function loadModalSpecimenTexture(imgUrl, tierHex) {
+      if (modalPedestalRingMat && tierHex) {
+        modalPedestalRingMat.color.set(tierHex);
       }
 
-      if (specimenMesh) {
-        specimenScene.remove(specimenMesh);
-        specimenMesh.geometry.dispose();
-        specimenMesh = null;
+      if (modalSpecimenMesh) {
+        modalScene.remove(modalSpecimenMesh);
+        modalSpecimenMesh.geometry.dispose();
+        modalSpecimenMesh = null;
       }
 
       const loader = new THREE.TextureLoader();
@@ -971,203 +1416,213 @@
           alphaTest: 0.05,
         });
 
-        specimenMesh = new THREE.Mesh(geo, mat);
-        specimenMesh.position.set(0, 0, 0);
-        specimenScene.add(specimenMesh);
+        modalSpecimenMesh = new THREE.Mesh(geo, mat);
+        modalSpecimenMesh.position.set(0, 0, 0);
+        modalScene.add(modalSpecimenMesh);
       });
     }
 
-    // Modal Handlers
-    window.openFishModal = function(fishId) {
+    // Modal Control Functions
+    window.openSpecimenModal = function(fishId) {
       const data = window.WIKI_DATA;
       if (!data) return;
       const fish = data.fishes.find(f => f.id === fishId);
       if (!fish) return;
 
       const tier = TIER_TOKENS[fish.tier];
-      const modal = document.getElementById('fishModal');
+      const modal = document.getElementById('specimen-modal');
 
-      document.getElementById('modalFishTitle').textContent = fish.name;
-      const badge = document.getElementById('modalFishTierBadge');
+      document.getElementById('modal-title').textContent = fish.name;
+      const badge = document.getElementById('modal-tier-badge');
       badge.textContent = `T${fish.tier} • ${tier.name}`;
       badge.style.backgroundColor = tier.bg;
       badge.style.color = tier.hex;
       badge.style.border = `1px solid ${tier.border}`;
 
-      document.getElementById('modalFishLore').textContent = fish.description || 'Sinh vật biển mang đặc trưng sinh thái của ngư trường đảo.';
-      document.getElementById('modalFishSize').textContent = `${fish.minSize} ~ ${fish.maxSize} kg`;
-      document.getElementById('modalFishPrice').textContent = `${fish.basePrice.toLocaleString()} vàng`;
-      document.getElementById('modalFishRate').textContent = data.tiers[fish.tier]?.rate || '0.1%';
-      document.getElementById('modalFishWorld').textContent = `World ${fish.world}: ${data.worlds.find(w => w.id === fish.world)?.name || ''}`;
+      document.getElementById('modal-lore').textContent = fish.description || 'Sinh vật biển mang đặc trưng sinh thái của ngư trường đảo.';
+      document.getElementById('modal-size').textContent = `${fish.minSize} ~ ${fish.maxSize} kg`;
+      document.getElementById('modal-price').textContent = `${fish.basePrice.toLocaleString()} vàng`;
+      document.getElementById('modal-rate').textContent = data.tiers[fish.tier]?.rate || '0.1%';
+      document.getElementById('modal-world').textContent = `World ${fish.world}: ${data.worlds.find(w => w.id === fish.world)?.name || ''}`;
 
-      // Advice
-      let tip = 'Dùng cần câu và mồi tương thích với thế giới để tăng sản lượng.';
+      // Custom Deep Sea Advice
+      let tip = 'Dùng cần câu và mồi tương thích với thế giới để tối đa hóa sản lượng.';
       if (fish.tier === 7) tip = 'Sử dụng "Mồi Thức Tỉnh Thủy Quái" để ép tỉ lệ xuất hiện lên mức 100%!';
-      else if (fish.tier >= 5) tip = 'Khuyên dùng "Mồi Vàng Ròng" và nâng cấp "Lưỡi Câu Cốt Lõi" Cấp 3+ để săn loài này.';
-      else if (fish.world === 2) tip = 'Cần trang bị "Cần Hợp Kim Chống Bức Xạ" và "Mồi Máu Dạ Quang".';
-      else if (fish.world === 3) tip = 'Cần trang bị "Cần Câu Xương Khủng Long" và "Mồi Hóa Thạch Hổ Phách".';
-      document.getElementById('modalFishTip').textContent = tip;
+      else if (fish.tier >= 5) tip = 'Khuyên dùng "Mồi Phù Thủy Hoàng Kim" và nâng cấp "Lưỡi Câu Cốt Lõi" Cấp 3+.';
+      else if (fish.world === 2) tip = 'Yêu cầu trang bị "Cần Hợp Kim Chống Bức Xạ" và "Mồi Máu Dạ Quang".';
+      else if (fish.world === 3) tip = 'Yêu cầu trang bị "Cần Câu Xương Khủng Long" và "Mồi Hóa Thạch Hổ Phách".';
+      document.getElementById('modal-tip').textContent = tip;
 
-      load3DSpecimen(`assets/fish/${fish.id}.png`, tier.hex);
+      loadModalSpecimenTexture(`assets/fish/${fish.id}.png`, tier.hex);
+
+      // Play Sonar Ping sound if audio enabled
+      playSonarBlip(660);
 
       modal.classList.remove('hidden');
       modal.classList.add('flex');
 
       setTimeout(() => {
-        const canvas = document.getElementById('specimen-3d-canvas');
-        if (canvas && specimenRenderer && specimenCamera) {
+        const canvas = document.getElementById('specimen-modal-canvas');
+        if (canvas && modalRenderer && modalCamera) {
           const rect = canvas.getBoundingClientRect();
-          specimenCamera.aspect = rect.width / rect.height;
-          specimenCamera.updateProjectionMatrix();
-          specimenRenderer.setSize(rect.width, rect.height);
+          modalCamera.aspect = rect.width / rect.height;
+          modalCamera.updateProjectionMatrix();
+          modalRenderer.setSize(rect.width, rect.height);
         }
-      }, 50);
+      }, 60);
 
       lucide.createIcons();
     };
 
-    window.closeFishModal = function() {
-      const modal = document.getElementById('fishModal');
+    window.closeSpecimenModal = function() {
+      const modal = document.getElementById('specimen-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     };
 
-    // Navigation Tabs
-    window.switchTab = function(tabName) {
-      const tabs = ['fishes', 'equipment', 'baits', 'skills', 'rates'];
-      tabs.forEach(t => {
-        const view = document.getElementById(`view-${t}`);
-        const tabBtn = document.getElementById(`tab-${t}`);
-        if (t === tabName) {
-          view.classList.remove('hidden');
-          tabBtn.className = 'px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer bg-white/[0.1] text-[#F5F5F7] shadow-sm';
-        } else {
-          view.classList.add('hidden');
-          tabBtn.className = 'px-3 py-1 rounded-[8px] text-[12px] font-medium transition-all cursor-pointer text-[#8A8A94] hover:text-[#F5F5F7]';
-        }
-      });
-      lucide.createIcons();
-    };
+    // Close on backdrop click
+    document.getElementById('specimen-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'specimen-modal') closeSpecimenModal();
+    });
 
-    // Filters
+    // Keyboard shortcuts (Esc & ⌘K)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSpecimenModal();
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
+        e.preventDefault();
+        focusSearch();
+      }
+    });
+
+    function focusSearch() {
+      const input = document.getElementById('heroSearchInput');
+      if (input) {
+        input.focus();
+        document.getElementById('hero').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function executeHeroSearch() {
+      const query = document.getElementById('heroSearchInput').value.trim();
+      searchQuery = query.toLowerCase();
+      renderCreatures();
+      document.getElementById('database').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // -------------------------------------------------------------
+    // 4. Creatures Database Rendering & Filters
+    // -------------------------------------------------------------
     window.setWorldFilter = function(worldId) {
-      currentWorld = currentWorld === worldId ? 0 : worldId;
-      [1, 2, 3].forEach(w => {
-        const card = document.getElementById(`biome-card-${w}`);
-        if (currentWorld === w) {
-          card.classList.add('border-[#5AC8FA]/50', 'bg-[#1A1A22]');
+      currentWorld = worldId;
+      [0, 1, 2, 3].forEach((w) => {
+        const btn = document.getElementById(`world-btn-${w}`);
+        if (!btn) return;
+        if (w === worldId) {
+          btn.className = 'world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer bg-[#22D3EE] text-[#010812] shadow-sm';
         } else {
-          card.classList.remove('border-[#5AC8FA]/50', 'bg-[#1A1A22]');
+          btn.className = 'world-filter-btn px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#94A3B8] hover:text-[#F8FAFC] transition-all cursor-pointer';
         }
       });
-      renderFishes();
+      renderCreatures();
     };
 
     window.setTierFilter = function(tierId) {
       currentTier = tierId;
-      document.querySelectorAll('.tier-filter-btn').forEach((btn, idx) => {
+      document.querySelectorAll('.tier-pill-btn').forEach((btn, idx) => {
         if (idx === tierId) {
-          btn.className = 'tier-filter-btn px-2.5 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.1] text-[#F5F5F7] cursor-pointer';
+          btn.classList.add('ring-2', 'ring-[#22D3EE]', 'scale-105');
         } else {
-          btn.className = 'tier-filter-btn px-2 py-1 rounded-[8px] text-[11px] font-medium bg-white/[0.04] text-[#8A8A94] hover:text-[#F5F5F7] cursor-pointer';
+          btn.classList.remove('ring-2', 'ring-[#22D3EE]', 'scale-105');
         }
       });
-      renderFishes();
+      renderCreatures();
     };
 
-    window.resetFilters = function() {
+    window.resetAllFilters = function() {
       currentWorld = 0;
       currentTier = 0;
       searchQuery = '';
-      const navSearch = document.getElementById('navSearchInput');
-      if (navSearch) navSearch.value = '';
+      const input = document.getElementById('heroSearchInput');
+      if (input) input.value = '';
       setWorldFilter(0);
       setTierFilter(0);
     };
 
-    // Search input listener
-    document.getElementById('navSearchInput').addEventListener('input', (e) => {
+    // Live search listener
+    document.getElementById('heroSearchInput').addEventListener('input', (e) => {
       searchQuery = e.target.value.toLowerCase().trim();
-      renderFishes();
+      renderCreatures();
     });
 
-    // Keyboard shortcut '/' to search
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeFishModal();
-      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
-        e.preventDefault();
-        document.getElementById('navSearchInput').focus();
-      }
-    });
-
-    // Render Fish Grid
-    function renderFishes() {
-      const grid = document.getElementById('fishGrid');
-      const counter = document.getElementById('resultsCounter');
-      const sortVal = document.getElementById('fishSortSelect').value;
+    function renderCreatures() {
+      const grid = document.getElementById('creatures-grid');
+      const badge = document.getElementById('creature-count-badge');
+      const sortVal = document.getElementById('creatureSortSelect').value;
       const data = window.WIKI_DATA;
-      if (!data) return;
+      if (!data || !grid) return;
 
-      let filtered = data.fishes.filter(f => {
-        const matchesWorld = currentWorld === 0 || f.world === currentWorld;
-        const matchesTier = currentTier === 0 || f.tier === currentTier;
-        const matchesSearch = !searchQuery || f.name.toLowerCase().includes(searchQuery);
-        return matchesWorld && matchesTier && matchesSearch;
+      let list = data.fishes.filter((f) => {
+        const matchWorld = currentWorld === 0 || f.world === currentWorld;
+        const matchTier = currentTier === 0 || f.tier === currentTier;
+        const matchSearch = !searchQuery || f.name.toLowerCase().includes(searchQuery) || (f.description && f.description.toLowerCase().includes(searchQuery));
+        return matchWorld && matchTier && matchSearch;
       });
 
-      // Sorting
-      if (sortVal === 'tierDesc') filtered.sort((a, b) => b.tier - a.tier);
-      else if (sortVal === 'priceDesc') filtered.sort((a, b) => b.basePrice - a.basePrice);
-      else if (sortVal === 'sizeDesc') filtered.sort((a, b) => b.maxSize - a.maxSize);
-      else if (sortVal === 'nameAsc') filtered.sort((a, b) => a.name.localeCompare(b.name));
+      // Sorting logic
+      if (sortVal === 'tierDesc') list.sort((a, b) => b.tier - a.tier);
+      else if (sortVal === 'priceDesc') list.sort((a, b) => b.basePrice - a.basePrice);
+      else if (sortVal === 'sizeDesc') list.sort((a, b) => b.maxSize - a.maxSize);
+      else if (sortVal === 'nameAsc') list.sort((a, b) => a.name.localeCompare(b.name));
 
-      counter.textContent = `Hiển thị ${filtered.length} / ${data.fishes.length} loài`;
+      badge.textContent = `${list.length} / ${data.fishes.length} Loài`;
 
-      if (filtered.length === 0) {
+      if (list.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full py-16 text-center text-[#8A8A94] aaa-card rounded-[16px]">
-            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-[#8A8A94] stroke-[1.5]"></i>
-            <p class="text-[14px] font-medium text-[#F5F5F7]">Không tìm thấy sinh vật phù hợp</p>
-            <p class="text-[12px] text-[#8A8A94] mt-1">Hãy thử xóa bộ lọc hoặc đổi từ khóa tìm kiếm.</p>
+          <div class="col-span-full py-20 text-center ocean-card rounded-3xl">
+            <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-[#22D3EE] stroke-[1.5]"></i>
+            <h4 class="text-lg font-bold text-[#F8FAFC]">Không tìm thấy tiêu bản phù hợp</h4>
+            <p class="text-[13px] text-[#94A3B8] mt-1">Hãy thử xóa bộ lọc hoặc tìm kiếm với từ khóa khác.</p>
           </div>
         `;
         lucide.createIcons();
         return;
       }
 
-      grid.innerHTML = filtered.map(fish => {
+      grid.innerHTML = list.map((fish) => {
         const tier = TIER_TOKENS[fish.tier];
         return `
-          <div onclick="openFishModal('${fish.id}')" class="aaa-card rounded-[12px] p-2.5 flex flex-col justify-between cursor-pointer group active:scale-[0.96] transition-all">
-            <!-- Top: World Left & TierBadge Right -->
+          <div onclick="openSpecimenModal('${fish.id}')" class="ocean-card rounded-2xl p-3 flex flex-col justify-between cursor-pointer group active:scale-[0.97] transition-all">
+            
+            <!-- Card Header: World indicator & Tier badge -->
             <div class="flex items-center justify-between w-full mb-1">
-              <span class="text-[9px] font-medium text-[#8A8A94]">W${fish.world}</span>
-              <span class="px-1.5 py-0.2 rounded-[6px] text-[9px] font-semibold uppercase tracking-wider" style="background: ${tier.bg}; color: ${tier.hex}; border: 1px solid ${tier.border}">
+              <span class="text-[9px] font-mono text-[#94A3B8]">W${fish.world}</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider" style="background: ${tier.bg}; color: ${tier.hex}; border: 1px solid ${tier.border}">
                 T${fish.tier}
               </span>
             </div>
 
-            <!-- Artwork Thumbnail -->
-            <div class="relative w-full h-24 rounded-[8px] bg-black/25 flex items-center justify-center p-1.5 my-1 overflow-hidden">
+            <!-- Sprite Display with Caustic Lighting -->
+            <div class="relative w-full h-28 rounded-xl bg-black/35 flex items-center justify-center p-2 my-1 overflow-hidden group-hover:bg-[#00B8D9]/10 transition-colors">
               <img 
                 src="assets/fish/${fish.id}.png" 
                 alt="${fish.name}" 
-                class="w-full h-full object-contain pointer-events-none group-hover:scale-[1.08] transition-transform duration-200"
+                class="w-full h-full object-contain pointer-events-none group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
                 loading="lazy"
-                onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%235AC8FA\\' stroke-width=\\'1.5\\'><path d=\\'M2 16s9-15 20-4-20-4-20-4Z\\'/></svg>'"
+                onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'36\\' height=\\'36\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%2322D3EE\\' stroke-width=\\'1.5\\'><path d=\\'M2 16s9-15 20-4-20-4-20-4Z\\'/></svg>'"
               />
             </div>
 
-            <!-- Meta: Name, Price, Size -->
-            <div class="flex flex-col mt-1">
-              <span class="text-[12px] font-medium text-[#F5F5F7] truncate leading-tight group-hover:text-[#5AC8FA] transition-colors">
+            <!-- Fish Name & Gold Metadata -->
+            <div class="mt-1">
+              <span class="text-[13px] font-bold text-[#F8FAFC] truncate block group-hover:text-[#67E8F9] transition-colors">
                 ${fish.name}
               </span>
-              <div class="flex items-center justify-between text-[10px] text-[#8A8A94] mt-1 tabular-numbers">
-                <span class="text-[#FFD60A] font-semibold">${fish.basePrice.toLocaleString()}g</span>
+              <div class="flex items-center justify-between text-[11px] font-mono text-[#94A3B8] mt-1 tabular-numbers">
+                <span class="text-[#F59E0B] font-semibold">${fish.basePrice.toLocaleString()}g</span>
                 <span>${fish.minSize}-${fish.maxSize}kg</span>
               </div>
             </div>
+
           </div>
         `;
       }).join('');
@@ -1175,182 +1630,190 @@
       lucide.createIcons();
     }
 
-    // Render Rods & Vehicles
-    function renderEquipment() {
-      const rodsContainer = document.getElementById('rodsGrid');
-      const vehiclesContainer = document.getElementById('vehiclesGrid');
+    // -------------------------------------------------------------
+    // 5. Equipment, Baits & Mutations Rendering
+    // -------------------------------------------------------------
+    function renderEquipmentAndBaits() {
+      const rodsContainer = document.getElementById('rods-grid');
+      const baitsContainer = document.getElementById('baits-grid');
+      const mutationsContainer = document.getElementById('mutations-grid');
       const data = window.WIKI_DATA;
       if (!data) return;
 
-      rodsContainer.innerHTML = data.rods.map((rod, idx) => `
-        <div class="aaa-card p-3.5 rounded-[12px] flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[6px] bg-white/[0.06] text-[#F5F5F7]">
-                Bậc ${idx + 1}
+      // Rods
+      if (rodsContainer) {
+        rodsContainer.innerHTML = data.rods.map((rod, idx) => `
+          <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-white/10 text-[#F8FAFC]">
+                  Bậc ${idx + 1}
+                </span>
+                <span class="text-[12px] font-mono text-[#22D3EE] font-semibold">${rod.speed}</span>
+              </div>
+              <h4 class="text-[16px] font-bold text-[#F8FAFC] mb-1">${rod.name}</h4>
+              <p class="text-[12px] text-[#94A3B8] leading-relaxed mb-4">${rod.desc}</p>
+            </div>
+
+            <div class="pt-3 border-t border-white/10 space-y-2">
+              <div class="p-2 rounded-xl bg-white/[0.04] text-[12px] font-medium text-[#22D3EE] flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-[#34D399] shrink-0"></i>
+                <span>${rod.buff}</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] font-mono text-[#94A3B8] tabular-numbers pt-1">
+                <span>Chế tác:</span>
+                <span class="text-[#F59E0B] font-bold">
+                  ${rod.priceGold.toLocaleString()} Vàng ${rod.priceDiamond > 0 ? `+ ${rod.priceDiamond} KC` : ''}
+                </span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Baits
+      if (baitsContainer) {
+        baitsContainer.innerHTML = data.baits.map((bait) => `
+          <div class="ocean-card p-4 rounded-2xl flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-[#00B8D9]/15 text-[#22D3EE] border border-[#00B8D9]/30 mb-2 inline-block">
+                ${bait.target}
               </span>
-              <span class="text-[11px] text-[#5AC8FA] font-medium tabular-numbers">${rod.speed}</span>
+              <h4 class="text-[15px] font-bold text-[#F8FAFC] mb-1">${bait.name}</h4>
+              <p class="text-[12px] text-[#94A3B8] leading-relaxed mb-4">${bait.effect}</p>
             </div>
-            <h4 class="text-[14px] font-semibold text-[#F5F5F7] mb-1">${rod.name}</h4>
-            <p class="text-[11px] text-[#8A8A94] leading-relaxed mb-3">${rod.desc}</p>
-          </div>
-
-          <div class="pt-2.5 border-t border-white/[0.06] space-y-1.5">
-            <div class="p-2 rounded-[8px] bg-white/[0.03] text-[11px] font-medium text-[#5AC8FA] flex items-center gap-1.5">
-              <i data-lucide="check" class="w-3.5 h-3.5 shrink-0 text-[#32D74B] stroke-[1.5]"></i>
-              <span>${rod.buff}</span>
-            </div>
-            <div class="flex items-center justify-between text-[11px] text-[#8A8A94] tabular-numbers pt-1">
-              <span>Giá chế tác:</span>
-              <span class="text-[#FFD60A] font-semibold">
-                ${rod.priceGold.toLocaleString()} Vàng ${rod.priceDiamond > 0 ? `+ ${rod.priceDiamond} KC` : ''}
-              </span>
+            <div class="pt-3 border-t border-white/10 text-[11px] font-mono text-[#F59E0B]">
+              <span class="text-[#94A3B8] block text-[9px] uppercase">Gói quy đổi:</span>
+              <span class="font-bold">${bait.price}</span>
             </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
 
-      vehiclesContainer.innerHTML = (data.vehicles || [
-        { name: 'Cano Cao Tốc', speed: 'Tàu lướt sóng nhanh', priceGold: 50000, desc: 'Tăng tốc độ di chuyển giữa các ngư trường.' },
-        { name: 'Tàu Ngầm Thám Hiểm', speed: 'Thám hiểm rãnh sâu', priceGold: 500000, desc: 'Thích hợp thám hiểm Vực Phóng Xạ & Rãnh Jura.' },
-        { name: 'Du Thuyền Hoàng Gia', speed: 'Du thuyền xa hoa', priceGold: 2000000, desc: 'Tối đa hóa tiện nghi và danh tiếng trên đảo.' },
-      ]).map(v => `
-        <div class="aaa-card p-3.5 rounded-[12px] flex flex-col justify-between">
-          <div>
-            <h4 class="text-[14px] font-semibold text-[#F5F5F7] mb-1">${v.name}</h4>
-            <p class="text-[11px] text-[#8A8A94] leading-relaxed mb-2">${v.desc || v.speed}</p>
+      // Mutations
+      if (mutationsContainer) {
+        mutationsContainer.innerHTML = data.mutations.map((m) => `
+          <div class="ocean-card p-3.5 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full" style="background: ${m.color}20; color: ${m.color}; border: 1px solid ${m.color}40">
+                  ${m.name}
+                </span>
+                <span class="text-[13px] font-mono font-bold" style="color: ${m.color}">${m.mult}</span>
+              </div>
+              <p class="text-[11px] text-[#94A3B8] leading-relaxed">${m.desc}</p>
+            </div>
           </div>
-          <div class="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
-            <span class="text-[#8A8A94]">Giá sở hữu:</span>
-            <span class="text-[#FFD60A] font-semibold tabular-numbers">${v.priceGold.toLocaleString()} Vàng</span>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
 
-    // Render Baits
-    function renderBaits() {
-      const container = document.getElementById('baitsGrid');
+    // -------------------------------------------------------------
+    // 6. Revenue Simulator Engine
+    // -------------------------------------------------------------
+    function initSimulationOptions() {
+      const select = document.getElementById('calc-creature-select');
       const data = window.WIKI_DATA;
-      if (!data) return;
+      if (!data || !select) return;
 
-      container.innerHTML = data.baits.map(b => `
-        <div class="aaa-card p-3.5 rounded-[12px] flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[6px] bg-[#5AC8FA]/10 text-[#5AC8FA] border border-[#5AC8FA]/20 mb-2 inline-block">
-              ${b.target}
-            </span>
-            <h4 class="text-[14px] font-semibold text-[#F5F5F7] mb-1.5">${b.name}</h4>
-            <p class="text-[11px] text-[#8A8A94] leading-relaxed mb-3">${b.effect}</p>
-          </div>
-
-          <div class="pt-2 border-t border-white/[0.06] text-[11px] text-[#8A8A94]">
-            <span class="text-[10px] uppercase text-[#8A8A94] block mb-0.5">Gói quy đổi:</span>
-            <span class="text-[#FFD60A] font-medium tabular-numbers">${b.price}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Render Rates
-    function renderRatesTable() {
-      const tbody = document.getElementById('ratesTableBody');
-      const data = window.WIKI_DATA;
-      if (!data) return;
-
-      const keys = [1, 2, 3, 4, 5, 6, 7];
-      tbody.innerHTML = keys.map(k => {
-        const t = data.tiers[k];
-        const mult = k === 1 ? '10g (Base)' : k === 2 ? '50g (5x)' : k === 3 ? '250g (25x)' : k === 4 ? '1.500g (150x)' : k === 5 ? '10.000g (1.000x)' : k === 6 ? '75.000g (7.500x)' : '500.000g (50.000x)';
-        return `
-          <tr class="hover:bg-white/[0.02] transition-colors">
-            <td class="py-2.5 font-medium" style="color: ${TIER_TOKENS[k].hex}">Tier ${k}</td>
-            <td class="py-2.5 font-medium text-[#F5F5F7]">${t.name}</td>
-            <td class="py-2.5 font-semibold text-[#5AC8FA] tabular-numbers">${t.rate}</td>
-            <td class="py-2.5 text-[#FFD60A] tabular-numbers font-medium">${mult}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // Profit Calculator
-    function initCalculator() {
-      const select = document.getElementById('calcFishSelect');
-      const data = window.WIKI_DATA;
-      if (!data) return;
-
-      select.innerHTML = data.fishes.map(f => `
+      select.innerHTML = data.fishes.map((f) => `
         <option value="${f.id}" data-base="${f.basePrice}" data-world="${f.world}">
           ${f.name} (Tier ${f.tier} • World ${f.world})
         </option>
       `).join('');
 
-      runCalculation();
+      runSimulation();
     }
 
-    window.runCalculation = function() {
-      const select = document.getElementById('calcFishSelect');
+    window.runSimulation = function() {
+      const select = document.getElementById('calc-creature-select');
       const opt = select.options[select.selectedIndex];
       if (!opt) return;
 
       const basePrice = parseFloat(opt.dataset.base);
       const world = parseInt(opt.dataset.world);
-      const count = parseInt(document.getElementById('calcCountSlider').value) || 1;
+      const count = parseInt(document.getElementById('calc-quantity-slider').value) || 1;
 
-      const rodId = document.getElementById('calcRodSelect').value;
+      const rodId = document.getElementById('calc-rod-select').value;
       let rodMult = 1;
       if (rodId === 'rod_carbon' && world === 1) rodMult = 3;
       if (rodId === 'rod_nuclear' && world === 2) rodMult = 6;
       if (rodId === 'rod_cosmic') rodMult = 3;
 
-      const mutationSelect = document.getElementById('calcMutationSelect');
-      const mutationMult = mutationSelect ? parseFloat(mutationSelect.value) : 1;
-
+      const mutationMult = parseFloat(document.getElementById('calc-mutation-select').value) || 1;
       const worldMult = world === 1 ? 1 : world === 2 ? 3 : 10;
+
       const total = Math.round(basePrice * count * worldMult * rodMult * mutationMult);
 
-      document.getElementById('calcResultGold').textContent = `${total.toLocaleString()} vàng`;
-      document.getElementById('calcFormulaBreakdown').textContent = 
+      document.getElementById('calc-gold-output').textContent = `${total.toLocaleString()} Vàng`;
+      document.getElementById('calc-formula-display').textContent = 
         `Gốc: ${basePrice}g • Ngư trường: ×${worldMult} • Cần: ×${rodMult} • Đột biến: ×${mutationMult} • SL: ×${count}`;
     };
 
-    // Render Mutations
-    function renderMutations() {
-      const container = document.getElementById('mutationsGrid');
-      const data = window.WIKI_DATA;
-      if (!data || !container) return;
+    // -------------------------------------------------------------
+    // 7. Interactive Deep Sea Sonar Sound Synthesizer (Web Audio API)
+    // -------------------------------------------------------------
+    function playSonarBlip(freq = 660) {
+      if (!isAudioPlaying) return;
+      try {
+        if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') audioContext.resume();
 
-      container.innerHTML = data.mutations.map(m => `
-        <div class="aaa-card p-3 rounded-[12px] flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-[6px]" style="background: ${m.color}20; color: ${m.color}; border: 1px solid ${m.color}40">
-                ${m.name}
-              </span>
-              <span class="text-[12px] font-bold tabular-numbers" style="color: ${m.color}">${m.mult}</span>
-            </div>
-            <p class="text-[11px] text-[#8A8A94] leading-relaxed">${m.desc}</p>
-          </div>
-        </div>
-      `).join('');
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.5, audioContext.currentTime + 0.35);
+
+        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.35);
+      } catch (err) {
+        console.warn('Web Audio note:', err);
+      }
     }
 
-    // Close modal on backdrop click
-    document.getElementById('fishModal').addEventListener('click', (e) => {
-      if (e.target.id === 'fishModal') closeFishModal();
+    window.toggleSonarAudio = function() {
+      isAudioPlaying = !isAudioPlaying;
+      const icon = document.getElementById('audio-icon');
+      if (isAudioPlaying) {
+        icon.setAttribute('data-lucide', 'volume-2');
+        playSonarBlip(880);
+      } else {
+        icon.setAttribute('data-lucide', 'volume-x');
+      }
+      lucide.createIcons();
+    };
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('main-nav');
+      if (window.scrollY > 40) {
+        nav.classList.add('py-2');
+        nav.classList.remove('py-3');
+      } else {
+        nav.classList.add('py-3');
+        nav.classList.remove('py-2');
+      }
     });
 
-    // Boot
+    // -------------------------------------------------------------
+    // Bootstrapping
+    // -------------------------------------------------------------
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      initAmbientBackground();
-      initSpecimenInspector();
-      renderFishes();
-      renderEquipment();
-      renderBaits();
-      renderMutations();
-      renderRatesTable();
-      initCalculator();
+      initUnderwaterBackground();
+      initHeroCreature();
+      initModalInspector();
+      renderCreatures();
+      renderEquipmentAndBaits();
+      initSimulationOptions();
     });
   </script>
 </body>
