@@ -262,4 +262,33 @@ describe('Fishing Game - Phase 9 Fish Library & Collection System', () => {
       expect(finalState.islandCustomization.activeEffectId).toBe('effect_collection_master');
     });
   });
+
+  describe('Expanded Library & Fish Inspection', () => {
+    it('should toggle library enlarged state', () => {
+      const store = useFishingStore.getState();
+      expect(store.isLibraryEnlarged).toBe(false);
+
+      store.toggleLibraryEnlarged();
+      expect(useFishingStore.getState().isLibraryEnlarged).toBe(true);
+
+      store.toggleLibraryEnlarged();
+      expect(useFishingStore.getState().isLibraryEnlarged).toBe(false);
+
+      store.setLibraryEnlarged(true);
+      expect(useFishingStore.getState().isLibraryEnlarged).toBe(true);
+    });
+
+    it('should inspect fish and automatically open library subtab', () => {
+      const store = useFishingStore.getState();
+      expect(store.activeSubTab).toBe('fishing');
+      expect(store.inspectingFishId).toBeNull();
+
+      store.inspectFish('fish_w1_01');
+      expect(useFishingStore.getState().inspectingFishId).toBe('fish_w1_01');
+      expect(useFishingStore.getState().activeSubTab).toBe('library');
+
+      store.inspectFish(null);
+      expect(useFishingStore.getState().inspectingFishId).toBeNull();
+    });
+  });
 });

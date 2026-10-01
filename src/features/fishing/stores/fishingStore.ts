@@ -149,6 +149,12 @@ interface FishingStoreState extends PlayerFishingState {
   upgradeCollectorSkill: () => boolean;
 
   updateSettings: (settings: Partial<PlayerFishingState['settings']>) => void;
+
+  isLibraryEnlarged: boolean;
+  inspectingFishId: string | null;
+  toggleLibraryEnlarged: () => void;
+  setLibraryEnlarged: (enlarged: boolean) => void;
+  inspectFish: (fishId: string | null) => void;
 }
 
 export const useFishingStore = create<FishingStoreState>((set, get) => ({
@@ -164,6 +170,12 @@ export const useFishingStore = create<FishingStoreState>((set, get) => ({
   newFishNotification: null,
   collectionCompletedCelebration: false,
   newUncaughtPillAlert: null,
+  isLibraryEnlarged: false,
+  inspectingFishId: null,
+
+  toggleLibraryEnlarged: () => set((s) => ({ isLibraryEnlarged: !s.isLibraryEnlarged })),
+  setLibraryEnlarged: (enlarged) => set({ isLibraryEnlarged: enlarged }),
+  inspectFish: (fishId) => set({ inspectingFishId: fishId, activeSubTab: fishId ? 'library' : get().activeSubTab }),
 
   initStore: () => {
     try {

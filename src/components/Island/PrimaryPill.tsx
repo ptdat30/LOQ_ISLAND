@@ -56,6 +56,7 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
 
   const isFishingStoreActive = useFishingStore((s) => s.isFishingActive);
   const activeSubTab = useFishingStore((s) => s.activeSubTab);
+  const isLibraryEnlarged = useFishingStore((s) => s.isLibraryEnlarged);
   const islandCustomization = useFishingStore((s) => s.islandCustomization);
   const fishingSettings = useFishingStore((s) => s.settings);
 
@@ -97,7 +98,10 @@ export const PrimaryPill: React.FC<PrimaryPillProps> = ({
   let targetHeight = 170;
 
   if (isFishing) {
-    if (activeSubTab !== 'fishing') {
+    if (activeSubTab === 'library' && isLibraryEnlarged) {
+      targetWidth = 630;
+      targetHeight = 520;
+    } else if (activeSubTab !== 'fishing') {
       targetWidth = 420;
       targetHeight = 400;
     } else {

@@ -16,6 +16,7 @@ export const FishBasket: React.FC = () => {
   const sellAllFish = useFishingStore((s) => s.sellAllFish);
   const sellFishByTier = useFishingStore((s) => s.sellFishByTier);
   const getBasketEstimatedValue = useFishingStore((s) => s.getBasketEstimatedValue);
+  const inspectFish = useFishingStore((s) => s.inspectFish);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [lastSoldNotify, setLastSoldNotify] = useState<string | null>(null);
@@ -181,7 +182,9 @@ export const FishBasket: React.FC = () => {
             return (
               <div
                 key={item.fishId}
-                className={`shrink-0 px-2 py-1 rounded-xl border flex items-center gap-1.5 ${style.bg} ${style.border}`}
+                onClick={() => inspectFish(fish.id)}
+                className={`shrink-0 px-2 py-1 rounded-xl border flex items-center gap-1.5 cursor-pointer hover:brightness-125 hover:scale-105 active:scale-95 transition-all ${style.bg} ${style.border}`}
+                title={`Bấm để mở thư viện & xem chi tiết loài ${fish.name}`}
               >
                 {fishImg && (
                   <img src={fishImg} alt={fish.name} className="w-5 h-5 object-contain shrink-0 drop-shadow" />
