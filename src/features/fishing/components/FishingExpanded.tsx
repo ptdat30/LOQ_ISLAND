@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, Fish } from 'lucide-react';
+import { X, ArrowLeft, Fish, Coins, Gem, Dna } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { FishingScene } from './FishingScene';
 import { FishBasket } from './FishBasket';
@@ -27,6 +27,9 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   renderCustomizationSubView,
   renderLibrarySubView,
 }) => {
+  const gold = useFishingStore((s) => s.gold);
+  const diamonds = useFishingStore((s) => s.diamonds);
+  const mutationPoints = useFishingStore((s) => s.mutationPoints);
   const activeSubTab = useFishingStore((s) => s.activeSubTab);
   const setActiveSubTab = useFishingStore((s) => s.setActiveSubTab);
   const offlineEarningsReport = useFishingStore((s) => s.offlineEarningsReport);
@@ -50,8 +53,8 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
   return (
     <div className="w-full h-full flex flex-col justify-between p-3 select-none text-white relative">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between pb-1 border-b border-white/10 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between pb-1.5 border-b border-white/10 shrink-0 gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {activeSubTab !== 'fishing' ? (
             <button
               type="button"
@@ -66,21 +69,52 @@ export const FishingExpanded: React.FC<FishingExpandedProps> = ({
               <div className="w-5 h-5 rounded-md bg-sky-500/20 flex items-center justify-center">
                 <Fish className="w-3.5 h-3.5 text-sky-400" strokeWidth={1.5} />
               </div>
-              <span className="text-[12px] font-semibold text-white/90 tracking-tight">
-                Mini-Game Câu Cá Idle
+              <span className="text-[12px] font-semibold text-white/90 tracking-tight whitespace-nowrap">
+                Câu Cá Idle
               </span>
             </div>
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={onCollapse}
-          className="p-1 rounded-md text-white/60 hover:text-rose-400 hover:bg-white/10 transition-colors cursor-pointer"
-          title="Thu nhỏ về Dynamic Island"
-        >
-          <X className="w-4 h-4" strokeWidth={1.5} />
-        </button>
+        {/* Currency Display Bar (Always visible in all subviews!) */}
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 px-2.5 py-0.5 rounded-xl bg-white/[0.06] border border-white/10 text-xs shadow-inner">
+            {/* Gold */}
+            <div className="flex items-center gap-1 shrink-0" title={`Tổng vàng hiện có: ${gold.toLocaleString()}`}>
+              <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
+              <span className="text-[11px] font-bold text-amber-300 tabular-nums whitespace-nowrap">
+                {gold.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Diamonds */}
+            <div className="flex items-center gap-1 shrink-0" title={`Kim Cương: ${diamonds.toLocaleString()}`}>
+              <Gem className="w-3.5 h-3.5 text-sky-400 shrink-0" strokeWidth={1.5} />
+              <span className="text-[11px] font-bold text-sky-300 tabular-nums whitespace-nowrap">
+                {diamonds.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Mutation Points (only when > 0) */}
+            {mutationPoints > 0 && (
+              <div className="flex items-center gap-1 shrink-0" title={`Điểm Đột Biến: ${mutationPoints.toLocaleString()}`}>
+                <Dna className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={1.5} />
+                <span className="text-[11px] font-bold text-purple-300 tabular-nums whitespace-nowrap">
+                  {mutationPoints.toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={onCollapse}
+            className="p-1 rounded-md text-white/60 hover:text-rose-400 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+            title="Thu nhỏ về Dynamic Island"
+          >
+            <X className="w-4 h-4" strokeWidth={1.5} />
+          </button>
+        </div>
       </div>
 
       {/* New Fish Unlocked Notification Banner (3 seconds) */}

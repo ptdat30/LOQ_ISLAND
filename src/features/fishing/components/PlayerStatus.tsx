@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Coins,
-  Gem,
-  Dna,
   Store,
   Sparkles,
   Palette,
@@ -18,9 +15,6 @@ import { WORLDS_INFO } from '../data/fishData';
 import type { WorldId } from '../../../types/fishing';
 
 export const PlayerStatus: React.FC = () => {
-  const gold = useFishingStore((s) => s.gold);
-  const diamonds = useFishingStore((s) => s.diamonds);
-  const mutationPoints = useFishingStore((s) => s.mutationPoints);
   const currentWorld = useFishingStore((s) => s.currentWorld);
   const currentRodId = useFishingStore((s) => s.currentRodId);
   const currentBaitId = useFishingStore((s) => s.currentBaitId);
@@ -34,13 +28,6 @@ export const PlayerStatus: React.FC = () => {
   const rod = RODS[currentRodId] || RODS.rod_bamboo;
   const bait = currentBaitId ? BAITS_INFO[currentBaitId] : null;
   const baitCount = currentBaitId ? baitInventory[currentBaitId] || 0 : 0;
-
-  const formatCurrency = (val: number): string => {
-    if (val >= 1_000_000_000) return `${(val / 1_000_000_000).toFixed(1)}B`;
-    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
-    if (val >= 100_000) return `${Math.round(val / 1000)}K`;
-    return val.toLocaleString();
-  };
 
   const handleSelectWorld = (w: WorldId) => {
     const success = switchWorld(w);
@@ -58,75 +45,47 @@ export const PlayerStatus: React.FC = () => {
 
   return (
     <div className="w-full shrink-0 bg-white/[0.03] border border-white/10 rounded-2xl p-2.5 flex flex-col gap-2 select-none relative">
-      {/* Top Row: Currencies (Gold, Diamonds, Mutation Points) */}
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        <div className="flex items-center gap-2.5 min-w-0">
-          {/* Gold */}
-          <div className="flex items-center gap-1 min-w-0" title={`Vàng kiếm được: ${gold.toLocaleString()}`}>
-            <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold text-amber-300 tabular-nums truncate">
-              {formatCurrency(gold)}
-            </span>
-          </div>
+      {/* Top Row: Sub-view Navigation Buttons (Shop, Skill Tree, Library, Customization) */}
+      <div className="grid grid-cols-4 gap-1.5 w-full">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('shop')}
+          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
+          title="Mở Shop (Cần, Mồi, Nâng cấp, Xe)"
+        >
+          <Store className="w-3.5 h-3.5 text-emerald-400 shrink-0" strokeWidth={1.5} />
+          <span>Shop</span>
+        </button>
 
-          {/* Diamonds */}
-          <div className="flex items-center gap-1 min-w-0" title={`Kim Cương cao cấp: ${diamonds.toLocaleString()}`}>
-            <Gem className="w-3.5 h-3.5 text-sky-400 shrink-0" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold text-sky-300 tabular-nums truncate">
-              {formatCurrency(diamonds)}
-            </span>
-          </div>
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('skillTree')}
+          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
+          title="Lưỡi Câu Cốt Lõi (Kỹ năng)"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={1.5} />
+          <span>Kỹ năng</span>
+        </button>
 
-          {/* Mutation Points */}
-          <div className="flex items-center gap-1 min-w-0" title={`Điểm Đột Biến: ${mutationPoints.toLocaleString()}`}>
-            <Dna className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold text-purple-300 tabular-nums truncate">
-              {formatCurrency(mutationPoints)}
-            </span>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('library')}
+          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
+          title="Thư Viện Cá (Bộ Sưu Tầm 84 Loài)"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-sky-400 shrink-0" strokeWidth={1.5} />
+          <span>Thư viện</span>
+        </button>
 
-        {/* Sub-view Navigation Buttons (Shop, Skill Tree, Library, Customization) */}
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('shop')}
-            className="h-7 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-semibold text-white/90 border border-white/10 cursor-pointer inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition-all shadow-sm"
-            title="Mở Shop (Cần, Mồi, Nâng cấp, Xe)"
-          >
-            <Store className="w-3 h-3 text-emerald-400 shrink-0" strokeWidth={1.5} />
-            <span className="whitespace-nowrap leading-none">Shop</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('skillTree')}
-            className="h-7 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-semibold text-white/90 border border-white/10 cursor-pointer inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition-all shadow-sm"
-            title="Lưỡi Câu Cốt Lõi"
-          >
-            <Sparkles className="w-3 h-3 text-purple-400 shrink-0" strokeWidth={1.5} />
-            <span className="whitespace-nowrap leading-none">Kỹ năng</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('library')}
-            className="h-7 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-semibold text-white/90 border border-white/10 cursor-pointer inline-flex items-center gap-1 whitespace-nowrap shrink-0 active:scale-95 transition-all shadow-sm"
-            title="Thư Viện Cá (Bộ Sưu Tầm 84 Loài)"
-          >
-            <BookOpen className="w-3 h-3 text-sky-400 shrink-0" strokeWidth={1.5} />
-            <span className="whitespace-nowrap leading-none">Thư viện</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('customization')}
-            className="h-7 w-7 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 border border-white/10 cursor-pointer inline-flex items-center justify-center shrink-0 active:scale-95 transition-all shadow-sm"
-            title="Tùy biến Dynamic Island"
-          >
-            <Palette className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('customization')}
+          className="h-7 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white/95 border border-white/10 cursor-pointer inline-flex items-center justify-center gap-1.5 whitespace-nowrap active:scale-95 transition-all shadow-sm"
+          title="Tùy biến Dynamic Island"
+        >
+          <Palette className="w-3.5 h-3.5 text-amber-400 shrink-0" strokeWidth={1.5} />
+          <span>Giao diện</span>
+        </button>
       </div>
 
       {/* Bottom Row: Equipped Rod, Bait, and World Selector */}
