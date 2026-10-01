@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Trophy, Crown, X } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { TIER_COLORS } from '../data/ratesData';
+import { getFishImageUrl } from '../data/fishImages';
 
 export const CatchCelebration: React.FC = () => {
   const celebrationTier = useFishingStore((s) => s.celebrationTier);
@@ -87,7 +88,13 @@ export const CatchCelebration: React.FC = () => {
           borderColor: isTier7 ? '#fde047' : '#ffffff40',
         }}
       >
-        {isTier7 ? (
+        {getFishImageUrl(lastCaughtFish.id) ? (
+          <img
+            src={getFishImageUrl(lastCaughtFish.id)}
+            alt={lastCaughtFish.name}
+            className="w-12 h-12 object-contain drop-shadow-2xl"
+          />
+        ) : isTier7 ? (
           <Crown className="w-8 h-8 text-yellow-200 fill-yellow-300 drop-shadow-md" strokeWidth={1.5} />
         ) : (
           <Trophy className="w-7 h-7 text-white drop-shadow-md" strokeWidth={1.5} />

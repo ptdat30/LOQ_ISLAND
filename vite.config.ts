@@ -23,6 +23,7 @@ const buildPreload = () => {
 buildPreload();
 
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     electron([

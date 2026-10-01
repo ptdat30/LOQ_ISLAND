@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { ALL_FISH, WORLDS_INFO } from '../data/fishData';
+import { getFishImageUrl } from '../data/fishImages';
 import { removeVietnameseTones } from '../utils/stringUtils';
 import { formatFishSize } from '../utils/sizeUtils';
 import type { Fish, FishTier } from '../../../types/fishing';
@@ -267,6 +268,7 @@ export const FishLibrarySubView: React.FC = () => {
               const isUnlocked = entry && entry.status === 'unlocked';
               const tierColor = TIER_HEX_MAP[fish.tier];
               const isCurrentAvatar = activeAvatarId === fish.id;
+              const fishImg = getFishImageUrl(fish.id);
 
               return (
                 <motion.div
@@ -310,7 +312,16 @@ export const FishLibrarySubView: React.FC = () => {
 
                   {/* Fish Icon (48x48) */}
                   <div className="w-10 h-10 flex items-center justify-center mt-1">
-                    {isUnlocked ? (
+                    {fishImg ? (
+                      <img
+                        src={fishImg}
+                        alt={isUnlocked ? fish.name : '???'}
+                        className={`w-9 h-9 object-contain drop-shadow transition-transform duration-200 group-hover:scale-110 pointer-events-none ${
+                          isUnlocked ? '' : 'filter brightness-0 opacity-30'
+                        }`}
+                        loading="lazy"
+                      />
+                    ) : isUnlocked ? (
                       <FishIcon
                         className="w-8 h-8 transition-transform group-hover:scale-110"
                         style={{ color: tierColor.hex }}
@@ -415,12 +426,20 @@ export const FishLibrarySubView: React.FC = () => {
                       {/* Icon Big 96x96 */}
                       <div className="flex flex-col items-center my-3">
                         <div
-                          className={`w-20 h-20 rounded-2xl flex items-center justify-center border shadow-xl ${
+                          className={`w-20 h-20 rounded-2xl flex items-center justify-center border shadow-xl p-1 overflow-hidden ${
                             isUnlocked ? `${tierColor.bg} ${tierColor.border}` : 'bg-black/40 border-white/10'
                           }`}
                           style={isUnlocked ? { boxShadow: tierColor.glow } : undefined}
                         >
-                          {isUnlocked ? (
+                          {getFishImageUrl(selectedFish.id) ? (
+                            <img
+                              src={getFishImageUrl(selectedFish.id)}
+                              alt={isUnlocked ? selectedFish.name : '???'}
+                              className={`w-16 h-16 object-contain drop-shadow-xl ${
+                                isUnlocked ? '' : 'filter brightness-0 opacity-30'
+                              }`}
+                            />
+                          ) : isUnlocked ? (
                             <FishIcon className="w-12 h-12" style={{ color: tierColor.hex }} strokeWidth={1.5} />
                           ) : (
                             <FishIcon className="w-10 h-10 text-white/30 filter brightness-0 opacity-30" strokeWidth={1.5} />

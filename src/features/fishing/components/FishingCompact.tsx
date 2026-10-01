@@ -3,6 +3,7 @@ import { Fish, Trophy } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { TIER_COLORS } from '../data/ratesData';
 import { FISH_MAP } from '../data/fishData';
+import { getFishImageUrl } from '../data/fishImages';
 
 interface FishingCompactProps {
   onClick?: () => void;
@@ -21,6 +22,7 @@ export const FishingCompact: React.FC<FishingCompactProps> = ({ onClick }) => {
 
   const avatarFish = activeAvatarId ? FISH_MAP[activeAvatarId] : null;
   const avatarStyle = avatarFish ? TIER_COLORS[avatarFish.tier] : null;
+  const avatarImg = getFishImageUrl(activeAvatarId);
 
   const formatGoldShort = (num: number): string => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -37,11 +39,19 @@ export const FishingCompact: React.FC<FishingCompactProps> = ({ onClick }) => {
       {/* Left: Fish Icon (or Avatar) + Status Dot */}
       <div className="flex items-center gap-1.5 shrink-0">
         <div className="relative">
-          <Fish
-            className={`w-4 h-4 ${avatarStyle ? avatarStyle.text : 'text-sky-400'}`}
-            strokeWidth={avatarStyle ? 2 : 1.5}
-            style={avatarStyle?.glow ? { filter: `drop-shadow(0 0 6px ${avatarStyle.glow})` } : undefined}
-          />
+          {avatarImg ? (
+            <img
+              src={avatarImg}
+              alt={avatarFish?.name || 'Avatar'}
+              className="w-4 h-4 object-contain rounded-full drop-shadow-sm"
+            />
+          ) : (
+            <Fish
+              className={`w-4 h-4 ${avatarStyle ? avatarStyle.text : 'text-sky-400'}`}
+              strokeWidth={avatarStyle ? 2 : 1.5}
+              style={avatarStyle?.glow ? { filter: `drop-shadow(0 0 6px ${avatarStyle.glow})` } : undefined}
+            />
+          )}
           {isFishingActive && (
             <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
           )}

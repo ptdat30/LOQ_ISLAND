@@ -4,6 +4,7 @@ import { ShoppingBag, Coins, ChevronDown, Check } from 'lucide-react';
 import { useFishingStore } from '../stores/fishingStore';
 import { FISH_MAP } from '../data/fishData';
 import { TIER_COLORS } from '../data/ratesData';
+import { getFishImageUrl } from '../data/fishImages';
 import { calculateFishPrice } from '../logic/economy';
 import type { FishTier } from '../../../types/fishing';
 
@@ -175,11 +176,16 @@ export const FishBasket: React.FC = () => {
             const style = TIER_COLORS[fish.tier];
             const unitPrice = calculateFishPrice(fish, currentWorld, currentRodId);
 
+            const fishImg = getFishImageUrl(fish.id);
+
             return (
               <div
                 key={item.fishId}
                 className={`shrink-0 px-2 py-1 rounded-xl border flex items-center gap-1.5 ${style.bg} ${style.border}`}
               >
+                {fishImg && (
+                  <img src={fishImg} alt={fish.name} className="w-5 h-5 object-contain shrink-0 drop-shadow" />
+                )}
                 <div className="flex flex-col">
                   <span className="text-[10px] font-semibold text-white/90 truncate max-w-[90px] leading-tight">
                     {fish.name}

@@ -5,6 +5,7 @@ import { useFishingStore } from '../stores/fishingStore';
 import { TIER_COLORS } from '../data/ratesData';
 import { WORLDS_INFO } from '../data/fishData';
 import { BAITS_INFO } from '../data/shopData';
+import { getFishImageUrl } from '../data/fishImages';
 
 export const FishingScene: React.FC = () => {
   const isFishingActive = useFishingStore((s) => s.isFishingActive);
@@ -142,10 +143,18 @@ export const FishingScene: React.FC = () => {
             >
               {/* Fish Icon with Glow */}
               <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-lg shrink-0 ${tierColor.bg} ${tierColor.border}`}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center border shadow-lg shrink-0 p-0.5 overflow-hidden ${tierColor.bg} ${tierColor.border}`}
                 style={{ boxShadow: `0 0 16px ${tierColor.glow}` }}
               >
-                <FishIcon className={`w-4 h-4 ${tierColor.text}`} strokeWidth={1.5} />
+                {getFishImageUrl(lastCaughtFish.id) ? (
+                  <img
+                    src={getFishImageUrl(lastCaughtFish.id)}
+                    alt={lastCaughtFish.name}
+                    className="w-7 h-7 object-contain drop-shadow"
+                  />
+                ) : (
+                  <FishIcon className={`w-4 h-4 ${tierColor.text}`} strokeWidth={1.5} />
+                )}
               </div>
 
               <div className="min-w-0 flex flex-col">
